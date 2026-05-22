@@ -65,10 +65,5 @@ Local release signing uses:
 
 If those files are missing, release builds fall back to debug signing for local development.
 
-## Ownership And License
-
-This repository is owned by Aditya Yadav (iad1tya).
-
-Official site: https://iad1tya.cyou
-
+## License
 Use is limited by [LICENSE](LICENSE). You may study, fork, and improve the app for personal or educational use with attribution preserved, but you may not rebrand or present it as your own independent product.
