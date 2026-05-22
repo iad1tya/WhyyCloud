@@ -1,4 +1,4 @@
-  <img src="assets/github.png" alt="Whyy Cloud"/>
+  <img src="assets/banner.png" alt="Whyy Cloud"/>
 
 Whyy Cloud is a Flutter app for local AI chat workflows across mobile and desktop. Chats, settings, and model metadata stay on the device while the UI coordinates model loading, prompt control, logs, and a local API surface.
 
