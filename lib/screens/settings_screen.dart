@@ -457,32 +457,29 @@ class _SettingsBody extends StatelessWidget {
                 context,
                 title: 'Storage & Tools',
                 children: [
-                  _menuTile(
+                  _boxedTile(
                     context,
                     title: 'Model Storage',
                     subtitle: modelManager.modelsDir,
-                    leadingIcon: null,
+                    trailing: null,
                     onTap: () async {
-                      // Copy models dir to clipboard and refresh scan
                       await Clipboard.setData(ClipboardData(text: modelManager.modelsDir));
                       Get.snackbar('Path Copied', 'Model storage path copied to clipboard.', snackPosition: SnackPosition.BOTTOM);
                     },
                   ),
-                  _menuTile(
+                  const SizedBox(height: 8),
+                  _boxedTile(
                     context,
                     title: 'App Logs',
                     subtitle: 'View logs, errors & share with developers',
-                    leadingIcon: null,
-                    leadingColor: AppColors.orange,
                     trailing: Icon(Icons.chevron_right_rounded, size: 20, color: context.textD),
                     onTap: () => Get.toNamed('/logs'),
                   ),
-                  _menuTile(
+                  const SizedBox(height: 8),
+                  _boxedTile(
                     context,
                     title: 'Clear Temporary Cache',
                     subtitle: 'Remove temporary app files',
-                    leadingIcon: null,
-                    leadingColor: context.textM,
                     trailing: null,
                     onTap: () async {
                       final confirmed = await Get.dialog<bool?>(
@@ -509,12 +506,10 @@ class _SettingsBody extends StatelessWidget {
                 context,
                 title: 'Danger Zone',
                 children: [
-                  _menuTile(
+                  _boxedTile(
                     context,
                     title: 'Delete All Chats',
                     subtitle: 'Remove every conversation from this device',
-                    leadingIcon: null,
-                    leadingColor: AppColors.red,
                     trailing: null,
                     surface: context.bgPanel,
                     borderColor: AppColors.red.withValues(alpha: 0.25),
@@ -617,10 +612,6 @@ class _SettingsBody extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: context.text,
                   ),
-                ),
-                Text(
-                  'Customize app behavior and performance',
-                  style: TextStyle(fontSize: 12, color: context.textD),
                 ),
               ],
             ),
@@ -773,6 +764,32 @@ class _SettingsBody extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _boxedTile(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    Color? surface,
+    Color? borderColor,
+  }) {
+    return _surfaceCard(
+      context,
+      color: surface,
+      borderColor: borderColor,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        title: Text(
+          title,
+          style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(subtitle, style: TextStyle(color: context.textD, fontSize: 12)),
+        trailing: trailing,
+        onTap: onTap,
       ),
     );
   }
@@ -965,7 +982,7 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
               style: OutlinedButton.styleFrom(
                 backgroundColor: context.bgInput,
                 foregroundColor: context.text,
-                side: BorderSide.none,
+                side: BorderSide(color: context.border.withValues(alpha: 0.6)),
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
