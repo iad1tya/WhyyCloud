@@ -38,7 +38,6 @@ class ChatModel extends HiveObject {
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
-  /// Auto-generate title from first user message.
   void autoTitle() {
     if (title != 'New Chat') return;
     final firstUserMsg = messages.where((m) => m.isUser).firstOrNull;

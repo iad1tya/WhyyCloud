@@ -3,38 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 
-/// Checks and prompts the user to disable battery optimization on Android.
-/// This is critical on Samsung and other aggressive OEMs that kill background apps.
 class BackgroundOptimizerService {
   static const _promptedKey = 'battery_opt_prompted';
 
-  /// Check and prompt the user if battery optimization is still enabled.
-  /// Shows a dialog explaining why it's needed, then opens system settings.
-  /// Only prompts on Android, and only once per install (unless optimization
-  /// is still enabled).
   static Future<void> checkAndPrompt(BuildContext context) async {
     if (!Platform.isAndroid) return;
 
     try {
       final box = Hive.box('settings');
 
-      // Check if battery optimization is already disabled for our app
       final isDisabled =
           await DisableBatteryOptimization.isBatteryOptimizationDisabled;
 
-      if (isDisabled == true) return; // Already good
+      if (isDisabled == true) return;
 
-      // Check if we've already prompted the user
       final alreadyPrompted =
           box.get(_promptedKey, defaultValue: false) as bool;
-      if (alreadyPrompted) return; // Don't nag
+      if (alreadyPrompted) return;
 
-      // Mark as prompted
       await box.put(_promptedKey, true);
 
       if (!context.mounted) return;
 
-      // Show explanation dialog — redesigned with white accent instead of orange
       final shouldOpen = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
@@ -124,8 +114,6 @@ class BackgroundOptimizerService {
     }
   }
 
-  /// Re-prompt the user (e.g. from settings). Always shows regardless of
-  /// previous prompts.
   static Future<void> openBatterySettings() async {
     if (!Platform.isAndroid) return;
     try {
@@ -135,7 +123,6 @@ class BackgroundOptimizerService {
     }
   }
 
-  /// Check if battery optimization is currently disabled.
   static Future<bool> isOptimizationDisabled() async {
     if (!Platform.isAndroid) return true;
     try {

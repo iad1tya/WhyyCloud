@@ -75,7 +75,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
 
     return Column(
       children: [
-        // ── Curved header ────────────────────────────
         Padding(
           padding: EdgeInsets.fromLTRB(
             12,
@@ -129,7 +128,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
           ),
         ),
 
-        // ── Filter chips ─────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Container(
@@ -152,16 +150,14 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
           ),
         ),
 
-        // ── Body ─────────────────────────────────────
         Expanded(
           child: Obx(() {
             final allCatalog = ctrl.catalog.toList();
             final downloaded = manager.downloadedModels.toList();
             final _ = manager.activeDownloads.length;
-            // ignore: unused_local_variable
+
             final tick = manager.tick.value;
 
-            // Apply filter
             List<AiModelInfo> filtered;
             switch (_filter) {
               case _Filter.downloaded:
@@ -179,13 +175,12 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
                 filtered = allCatalog;
             }
 
-            // Always sort the active model to the top if it's in the filtered list
             final activeFilename = ctrl.selectedModelFilename.value;
             if (activeFilename != null) {
               filtered.sort((a, b) {
                 if (a.filename == activeFilename) return -1;
                 if (b.filename == activeFilename) return 1;
-                return 0; // maintain relative order for the rest
+                return 0;
               });
             }
 
@@ -232,7 +227,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
               children: [
-                // ── Local files not in catalog ──────────
                 if (_filter == _Filter.all ||
                     _filter == _Filter.downloaded) ...[
                   ...downloaded
@@ -240,14 +234,12 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
                       .map((f) => _localFileCard(context, ctrl, f)),
                 ],
 
-                // ── Count ───────────────────────────────
                 _sectionTitle(
                   context,
                   '${_filter == _Filter.all ? "Available" : _filter.name[0].toUpperCase() + _filter.name.substring(1)} Models (${filtered.length})',
                 ),
                 const SizedBox(height: 12),
 
-                // ── Model cards ─────────────────────────
                 ...List.generate(filtered.length, (index) {
                   final model = filtered[index];
                   final isDl = downloaded.contains(model.filename);
@@ -472,7 +464,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
   }
 }
 
-/// Pill button for the import action
 class _ImportButton extends StatelessWidget {
   final ModelController ctrl;
   const _ImportButton({required this.ctrl});

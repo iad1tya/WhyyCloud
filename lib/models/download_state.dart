@@ -1,4 +1,3 @@
-/// Tracks real-time download state for a single model.
 class DownloadState {
   final String filename;
   double totalBytes;

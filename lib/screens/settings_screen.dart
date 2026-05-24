@@ -16,7 +16,6 @@ import '../services/background_optimizer_service.dart';
 import '../services/chat_storage_service.dart';
 
 class SettingsScreen extends StatelessWidget {
-  /// When true, no Scaffold — just the body content for embedding in tabs.
   final bool embedded;
   final VoidCallback? onOpenDrawer;
 
@@ -913,7 +912,7 @@ class _SettingsBody extends StatelessWidget {
             return TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                updateCtrl.downloadedFilePath.value = ''; // Reset on cancel
+                updateCtrl.downloadedFilePath.value = '';
               },
               child: Text(
                 'Cancel',
@@ -1114,10 +1113,8 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
   late double _gpuLayers;
   bool _showManual = false;
 
-  // Auto-detect the best backend and GPU layers for this device
   static Map<String, dynamic> _detectBestConfig() {
     if (!Platform.isAndroid && !Platform.isIOS) {
-      // Desktop: CPU is safest, Vulkan if available
       return {
         'backend': 'cpu',
         'gpuLayers': 0,
@@ -1125,25 +1122,21 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
       };
     }
 
-    // Android/iOS: detect available RAM and processor count
     final cores = Platform.numberOfProcessors;
 
     if (cores >= 8) {
-      // High-end device (e.g. Snapdragon 8 Gen 2+, Dimensity 9000+)
       return {
         'backend': 'opencl',
         'gpuLayers': 33,
         'reason': 'OpenCL GPU — best for high-end SoC ($cores cores detected)',
       };
     } else if (cores >= 6) {
-      // Mid-range device
       return {
         'backend': 'cpu',
         'gpuLayers': 0,
         'reason': 'CPU mode — safe for mid-range devices ($cores cores)',
       };
     } else {
-      // Low-end device
       return {
         'backend': 'cpu',
         'gpuLayers': 0,
@@ -1172,7 +1165,7 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
   void _saveBackend(String val) {
     setState(() => _backend = val);
     widget.storage.backendType = val;
-    // Auto-set sensible GPU layers when switching
+
     if (val == 'cpu') {
       setState(() => _gpuLayers = 0);
       widget.storage.gpuLayers = 0;
@@ -1211,7 +1204,6 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Recommended Auto Config ──
           Text(
             'Compute Device',
             style: TextStyle(
@@ -1227,7 +1219,6 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
           ),
           const SizedBox(height: 12),
 
-          // Recommended button
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
@@ -1279,7 +1270,6 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
 
           const SizedBox(height: 16),
 
-          // ── Manual Override Toggle ──
           InkWell(
             onTap: () => setState(() => _showManual = !_showManual),
             borderRadius: BorderRadius.circular(8),

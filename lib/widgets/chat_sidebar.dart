@@ -24,7 +24,6 @@ class ChatSidebar extends StatelessWidget {
 
     return Column(
       children: [
-        // New chat button
         if (showNewChatButton)
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
@@ -55,7 +54,6 @@ class ChatSidebar extends StatelessWidget {
             ),
           ),
 
-        // Chat list
         Expanded(
           child: Obx(() {
             final chats = ctrl.chats;
@@ -128,7 +126,7 @@ class ChatSidebar extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            // Delete button with confirmation
+
                             SizedBox(
                               width: 26,
                               height: 26,
@@ -158,7 +156,6 @@ class ChatSidebar extends StatelessWidget {
           }),
         ),
 
-        // Footer
         Container(
           margin: const EdgeInsets.fromLTRB(12, 6, 12, 12),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

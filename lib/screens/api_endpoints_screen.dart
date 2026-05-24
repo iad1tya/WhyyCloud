@@ -29,7 +29,6 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
     });
 
     try {
-      // Always use localhost for internal testing, even if bound to 0.0.0.0
       final url = 'http://127.0.0.1:${apiServer.port.value}$path';
       final response = await http
           .get(Uri.parse(url))
@@ -75,7 +74,6 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Status Header
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -138,7 +136,6 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Endpoints
             _buildEndpointCard(
               context: context,
               method: 'GET',
@@ -154,13 +151,11 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
               path: '/v1/chat/completions',
               description:
                   'Generate a chat completion. Accepts messages array in standard format.',
-              onTest:
-                  null, // POST is harder to just "test" with a simple button without a payload builder
+              onTest: null,
             ),
 
             const SizedBox(height: 32),
 
-            // Test Output Area
             if (_testResult.isNotEmpty) ...[
               Text(
                 'Test Output',

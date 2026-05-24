@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// Animated pulsing circle typing indicator shown while AI is generating.
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
 

@@ -1,4 +1,3 @@
-/// Represents a downloadable/loadable AI model from the catalog.
 class AiModelInfo {
   final String id;
   final String name;
@@ -6,8 +5,8 @@ class AiModelInfo {
   final String url;
   final double sizeGb;
   final int minRamGb;
-  final String label; // UNCENSORED / STANDARD / CUSTOM
-  final String badge; // RECOMMENDED, HERETIC, etc.
+  final String label;
+  final String badge;
   final String systemPrompt;
   final bool recommended;
 

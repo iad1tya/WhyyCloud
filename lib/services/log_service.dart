@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 
 class LogEntry {
   final DateTime timestamp;
-  final String level; // INFO, WARN, ERROR
+  final String level;
   final String message;
   final String? source;
 
@@ -48,13 +48,12 @@ class LogService extends GetxService {
         source: source,
       ),
     );
-    // Keep within limit
+
     while (logs.length > maxLogs) {
       logs.removeAt(0);
     }
   }
 
-  /// Export all logs as a single string for sharing.
   String exportAll() {
     final buf = StringBuffer();
     buf.writeln('=== Portable AI Logs ===');

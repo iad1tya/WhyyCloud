@@ -65,7 +65,6 @@ class UpdateController extends GetxController {
   }
 
   bool _isNewer(String latest, String current) {
-    // Basic semver comparison
     final lParts = latest.split('.').map((s) => int.tryParse(s) ?? 0).toList();
     final cParts = current.split('.').map((s) => int.tryParse(s) ?? 0).toList();
 

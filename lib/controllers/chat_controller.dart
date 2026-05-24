@@ -40,7 +40,6 @@ class ChatController extends GetxController {
     }
   }
 
-  /// Create a new chat and switch to it.
   void newChat() {
     final chat = ChatModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -51,7 +50,6 @@ class ChatController extends GetxController {
     activeChatId.value = chat.id;
   }
 
-  /// Switch to an existing chat.
   void switchChat(String id) {
     activeChatId.value = id;
     final chat = activeChat;
@@ -60,7 +58,6 @@ class ChatController extends GetxController {
     }
   }
 
-  /// Delete a chat.
   void deleteChat(String id) {
     chats.removeWhere((c) => c.id == id);
     _storage.deleteChat(id);
@@ -69,7 +66,6 @@ class ChatController extends GetxController {
     }
   }
 
-  /// Send a user message and stream AI response.
   Future<void> sendMessage(
     String text, {
     String? modelFilename,
@@ -96,7 +92,6 @@ class ChatController extends GetxController {
               ? 'Attached ${attachmentName!.endsWith('.gguf') ? 'file' : 'item'}: $attachmentName'
               : 'Attached item');
 
-    // Add user message
     final userMsg = MessageModel(
       role: MessageRole.user,
       content: content,
@@ -110,7 +105,6 @@ class ChatController extends GetxController {
     chat.autoTitle();
     chat.updatedAt = DateTime.now();
 
-    // Lock model to this chat on first message
     if (chat.modelId.isEmpty && modelFilename != null) {
       chat.modelId = modelFilename;
     }
@@ -118,13 +112,11 @@ class ChatController extends GetxController {
     _storage.saveChat(chat);
     chats.refresh();
 
-    // Build message history for LLM
     final history = chat.messages
         .where((m) => !m.isSystem)
         .map((m) => m.toLlamaMessage())
         .toList();
 
-    // Start generation
     isGenerating.value = true;
     streamedResponse.value = '';
 
@@ -144,7 +136,7 @@ class ChatController extends GetxController {
       await for (final token in stream) {
         streamedResponse.value += token;
         aiMsg.content = streamedResponse.value;
-        // Throttle UI refreshes
+
         chats.refresh();
       }
     } catch (e) {
@@ -152,7 +144,6 @@ class ChatController extends GetxController {
         aiMsg.content = '⚠ Error: ${e.toString()}';
       }
     } finally {
-      // Clean up any trailing stop tokens or whitespace
       aiMsg.content = aiMsg.content
           .replaceAll(
             RegExp(
@@ -171,13 +162,11 @@ class ChatController extends GetxController {
     }
   }
 
-  /// Stop current generation.
   void stopGeneration() {
     _llm.stopGeneration();
     isGenerating.value = false;
   }
 
-  /// Update the system prompt for the active chat.
   void updateSystemPrompt(String prompt) {
     systemPrompt.value = prompt;
     final chat = activeChat;
@@ -187,13 +176,11 @@ class ChatController extends GetxController {
     }
   }
 
-  /// Set and persist the global system prompt.
   void setGlobalSystemPrompt(String prompt) {
     systemPrompt.value = prompt;
     _storage.globalSystemPrompt = prompt;
   }
 
-  /// Clear global system prompt.
   void clearGlobalSystemPrompt() {
     systemPrompt.value = '';
     _storage.globalSystemPrompt = '';

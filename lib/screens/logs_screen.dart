@@ -18,7 +18,6 @@ class LogsScreen extends StatelessWidget {
       backgroundColor: context.bg,
       body: Column(
         children: [
-          // ── Top bar ──────────────────────────────────
           Container(
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top,
@@ -48,7 +47,7 @@ class LogsScreen extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  // Copy all logs
+
                   IconButton(
                     icon: Icon(
                       Icons.copy_rounded,
@@ -61,7 +60,7 @@ class LogsScreen extends StatelessWidget {
                       Clipboard.setData(ClipboardData(text: text));
                     },
                   ),
-                  // Clear logs
+
                   IconButton(
                     icon: Icon(
                       Icons.delete_outline_rounded,
@@ -108,10 +107,8 @@ class LogsScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Filter chips ──────────────────────────────
           _FilterBar(),
 
-          // ── Log list ──────────────────────────────────
           Expanded(
             child: Obx(() {
               final filter = _FilterBar._activeFilter.value;
@@ -159,7 +156,6 @@ class LogsScreen extends StatelessWidget {
             }),
           ),
 
-          // ── Bottom share banner ──────────────────────
           Container(
             padding: EdgeInsets.only(
               left: 16,
@@ -205,7 +201,6 @@ class LogsScreen extends StatelessWidget {
   }
 }
 
-// ── Filter bar ──────────────────────────────────────────────
 class _FilterBar extends StatelessWidget {
   static final _activeFilter = 'ALL'.obs;
 
@@ -263,7 +258,6 @@ class _FilterBar extends StatelessWidget {
   }
 }
 
-// ── Single log entry tile ─────────────────────────────────────
 class _LogTile extends StatelessWidget {
   final LogEntry entry;
   const _LogTile({required this.entry});
@@ -359,7 +353,6 @@ class _LogTile extends StatelessWidget {
   }
 }
 
-/// Save logs to a timestamped file in the app documents directory.
 Future<String?> _saveLogsToFile(LogService logService) async {
   try {
     final dir = await getApplicationDocumentsDirectory();

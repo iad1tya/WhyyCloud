@@ -11,11 +11,9 @@ import '../controllers/model_controller.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/update_controller.dart';
 
-/// Initial bindings — registers all services and controllers with GetX DI.
 class AppBindings extends Bindings {
   @override
   void dependencies() {
-    // ── Services (async init happens in splash) ──────────────────
     Get.lazyPut(() => LlmService(), fenix: true);
     Get.lazyPut(() => ModelManager(), fenix: true);
     Get.lazyPut(() => ChatStorageService(), fenix: true);
@@ -23,10 +21,7 @@ class AppBindings extends Bindings {
     Get.lazyPut(() => WakelockService(), fenix: true);
     Get.lazyPut(() => LogService(), fenix: true);
 
-    // ── Controllers ──────────────────────────────────────────────
-    Get.put(
-      ThemeController(),
-    ); // Put instead of lazyPut since we need theme immediately
+    Get.put(ThemeController());
     Get.lazyPut(() => ChatController(), fenix: true);
     Get.lazyPut(() => ModelController(), fenix: true);
     Get.lazyPut(() => UpdateController(), fenix: true);

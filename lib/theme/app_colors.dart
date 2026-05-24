@@ -19,23 +19,19 @@ extension ThemeExt on BuildContext {
   Color get textD => isDark ? AppColors.darkTextD : AppColors.lightTextD;
 }
 
-/// Design tokens ported 1:1 from FastChatUI.html :root CSS variables.
 class AppColors {
   AppColors._();
 
-  // ── Common Colors ──────────────────────────────────────────────
-  // New light-blue accent palette (clean, minimal)
-  static const accent = Color(0xFF60A5FA); // light blue
-  static const accentDim = Color(0xFF3B82F6); // deeper blue
-  static const accentHi = Color(0xFF93C5FD); // highlight blue
-  // Light / dark primary accents (black in light mode, white in dark mode)
+  static const accent = Color(0xFF60A5FA);
+  static const accentDim = Color(0xFF3B82F6);
+  static const accentHi = Color(0xFF93C5FD);
+
   static const accentLight = Color(0xFF000000);
   static const accentDark = Color(0xFFFFFFFF);
   static const green = Color(0xFF3FB950);
   static const red = Color(0xFFF85149);
   static const orange = Color(0xFFE3B341);
 
-  // ── Dark Theme Colors ──────────────────────────────────────────
   static const darkBg = Color(0xFF000000);
   static const darkBgSidebar = Color(0xFF000000);
   static const darkBgPanel = Color(0xFF0A0A0A);
@@ -48,26 +44,23 @@ class AppColors {
   static const darkTextM = Color(0xFFF2F2F2);
   static const darkTextD = Color(0xFFB3B3B3);
 
-  // ── Light Theme Colors ─────────────────────────────────────────
   static const lightBg = Color(0xFFFFFFFF);
-  // Light theme: clean white background with subtle blue accents
+
   static const lightBgSidebar = Color(0xFFFFFFFF);
   static const lightBgPanel = Color(0xFFFFFFFF);
   static const lightBgInput = Color(0xFFF8FBFF);
   static const lightBgMsgAi = Color(0xFFF8FBFF);
-  static const lightBgHover = Color(0xFFEFF8FF); // very light blue hover
-  static const lightBorder = Color(0xFFCBD5E1); // clearer slate border
+  static const lightBgHover = Color(0xFFEFF8FF);
+  static const lightBorder = Color(0xFFCBD5E1);
   static const lightBorderFaint = Color(0xFFE2E8F0);
-  static const lightText = Color(0xFF0F172A); // Dark slate
+  static const lightText = Color(0xFF0F172A);
   static const lightTextM = Color(0xFF475569);
   static const lightTextD = Color(0xFF94A3B8);
 
-  // ── Label colours ────────────────────────────────────────────
   static const uncensored = Color(0xFFEF4444);
   static const standard = Color(0xFF06B6D4);
   static const custom = Color(0xFF22C55E);
 
-  // ── Gradients ────────────────────────────────────────────────
   static const accentGradient = LinearGradient(
     colors: [accent, accentHi],
     begin: Alignment.topLeft,
@@ -76,6 +69,5 @@ class AppColors {
 }
 
 extension AppThemeColors on BuildContext {
-  /// Theme-aware primary accent color. Use `context.accent` in widgets.
   Color get accent => Theme.of(this).colorScheme.primary;
 }

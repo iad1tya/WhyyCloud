@@ -47,10 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _pendingAttachmentMimeType;
   String? _pendingAttachmentBase64;
 
-  // Mobile bottom nav index: 0=Chat, 1=Models, 2=Settings
   int _mobileTabIndex = 0;
 
-  // Scaffold key for drawer
   final GlobalKey<ScaffoldState> _mobileScaffoldKey =
       GlobalKey<ScaffoldState>();
 
@@ -113,9 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await _tts.setSpeechRate(0.48);
       await _tts.setPitch(1.0);
       await _tts.setVolume(1.0);
-    } catch (_) {
-      // TTS setup is best-effort; voice chat still works without custom tuning.
-    }
+    } catch (_) {}
 
     setState(() {
       _voiceServicesReady = available;
@@ -261,9 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       await _tts.stop();
       await _tts.speak(text);
-    } catch (_) {
-      // If TTS fails, keep the chat functional and just skip audio playback.
-    }
+    } catch (_) {}
   }
 
   void _toggleReplySpeech() {
@@ -400,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Stack(
       children: [
         if (isDesktop) _buildDesktopLayout() else _buildMobileLayout(),
-        // ── Global model loading overlay ──
+
         _buildLoadingOverlay(),
       ],
     );
@@ -415,7 +409,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final msg = _modelCtrl.loadingStatusMsg.value;
       final filename = _modelCtrl.loadingModelFilename.value ?? 'Model';
 
-      // Derive a short display name from the filename
       final displayName = filename.endsWith('.gguf')
           ? filename.substring(0, filename.length - 5)
           : filename;
@@ -445,7 +438,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Circular progress
                   SizedBox(
                     width: 80,
                     height: 80,
@@ -484,7 +476,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Model name
                   Text(
                     displayName,
                     style: TextStyle(
@@ -498,7 +489,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
 
-                  // Status message
                   Text(
                     msg.isNotEmpty ? msg : 'Importing file...',
                     style: TextStyle(fontSize: 12, color: context.textM),
@@ -506,7 +496,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Hint for large models
                   if (progress == 0)
                     Text(
                       'Large models (5GB+) take about 30-50 seconds for Android to process. Please wait.',
@@ -519,7 +508,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   const SizedBox(height: 20),
 
-                  // Cancel button
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -547,15 +535,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // MOBILE LAYOUT — Bottom nav with 3 tabs + drawer for chat history
-  // ═══════════════════════════════════════════════════════════════
   Widget _buildMobileLayout() {
     return Scaffold(
       key: _mobileScaffoldKey,
       backgroundColor: context.bg,
       resizeToAvoidBottomInset: true,
-      // ── Left drawer for chat history ──
+
       drawer: Drawer(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -581,7 +566,6 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(30),
               child: Column(
                 children: [
-                  // Drawer header
                   Container(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                     decoration: BoxDecoration(
@@ -608,11 +592,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
-                        // New chat button removed from drawer header to declutter
                       ],
                     ),
                   ),
-                  // Menu entries: move bottom nav (Chat, Models, Settings) into drawer
+
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
                     child: Column(
@@ -657,7 +640,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Divider(color: context.borderFaint, height: 1),
                   ),
 
-                  // Chat list
                   Expanded(
                     child: ChatSidebar(
                       onNewChat: () {
@@ -681,9 +663,8 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _mobileTabIndex,
         children: [
-          // Tab 0: Chat
           _buildMobileChatTab(),
-          // Tab 1: Models
+
           SafeArea(
             bottom: false,
             child: ModelLibraryScreen(
@@ -691,7 +672,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
             ),
           ),
-          // Tab 2: Settings
+
           SafeArea(
             bottom: false,
             child: SettingsScreen(
@@ -701,7 +682,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // Bottom navigation moved into the drawer for a cleaner minimal UI on mobile.
     );
   }
 
@@ -764,12 +744,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMobileChatTab() {
     return Column(
       children: [
-        // Mobile top bar — minimal with SafeArea for status bar
         Container(
           color: context.bgPanel,
           child: SafeArea(bottom: false, child: _buildMobileTopBar()),
         ),
-        // Model loading progress banner
+
         Obx(() {
           if (!_modelCtrl.isLoadingModel.value) return const SizedBox.shrink();
           final progress = _modelCtrl.loadingProgress.value;
@@ -840,7 +819,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }),
-        // Chat area
+
         Expanded(child: _buildChatArea()),
       ],
     );
@@ -858,14 +837,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Sidebar / history button — opens drawer from left
           IconButton(
             icon: Icon(Icons.menu_rounded, size: 22, color: context.textM),
             onPressed: () => _mobileScaffoldKey.currentState?.openDrawer(),
             tooltip: 'Chat History',
           ),
 
-          // Model selector dropdown
           Expanded(
             child: Center(
               child: Obx(() {
@@ -886,7 +863,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Status dot
                       Container(
                         width: 7,
                         height: 7,
@@ -927,7 +903,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // New chat button — on the right
           IconButton(
             icon: Icon(Icons.edit_square, size: 20, color: context.textM),
             onPressed: () => _chatCtrl.newChat(),
@@ -941,7 +916,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showModelPicker(BuildContext context) {
     final downloaded = _modelCtrl.downloadedModels;
     if (downloaded.isEmpty) {
-      // No models — nudge user to Models tab
       setState(() => _mobileTabIndex = 1);
       return;
     }
@@ -958,7 +932,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
               Container(
                 width: 36,
                 height: 4,
@@ -981,7 +954,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const Spacer(),
-                    // Unload button if model is loaded
+
                     Obx(() {
                       if (_llm.isLoaded.value) {
                         return TextButton.icon(
@@ -1019,7 +992,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              // Model list
+
               ...downloaded.map((filename) {
                 final info = _modelCtrl.getModelInfo(filename);
                 final isActive =
@@ -1107,15 +1080,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // DESKTOP LAYOUT — Sidebar + Top bar
-  // ═══════════════════════════════════════════════════════════════
   Widget _buildDesktopLayout() {
     return Scaffold(
       backgroundColor: context.bg,
       body: Row(
         children: [
-          // Sidebar
           if (_sidebarOpen)
             SizedBox(
               width: 260,
@@ -1134,7 +1103,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-          // Main content
           Expanded(
             child: Column(
               children: [
@@ -1165,7 +1133,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Sidebar toggle
           IconButton(
             icon: Icon(
               _sidebarOpen
@@ -1180,7 +1147,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(width: 8),
 
-          // Model selector dropdown
           Obx(() {
             final fname = _modelCtrl.selectedModelFilename.value;
             final info = fname != null ? _modelCtrl.getModelInfo(fname) : null;
@@ -1221,7 +1187,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const Spacer(),
 
-          // Engine status
           Obx(
             () => Row(
               mainAxisSize: MainAxisSize.min,
@@ -1249,7 +1214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 if (_llm.isLoaded.value && !_llm.isLoadingModel.value) ...[
                   const SizedBox(width: 8),
-                  // Unload button on desktop
+
                   InkWell(
                     onTap: () => _modelCtrl.unloadCurrentModel(),
                     borderRadius: BorderRadius.circular(4),
@@ -1292,7 +1257,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(width: 8),
 
-          // Theme toggle
           Obx(
             () => IconButton(
               icon: Icon(
@@ -1307,7 +1271,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Settings
           IconButton(
             icon: Icon(Icons.settings_outlined, size: 20, color: context.textM),
             onPressed: () => Get.toNamed('/settings'),
@@ -1318,9 +1281,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // SHARED — Chat area used by both layouts
-  // ═══════════════════════════════════════════════════════════════
   Widget _buildChatArea() {
     return Column(
       children: [
@@ -1347,7 +1307,7 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 if (index < chat.messages.length) {
                   final msg = chat.messages[index];
-                  // Show speed on the last AI message
+
                   final isLastAi =
                       msg.isAssistant && index == chat.messages.length - 1;
                   return ChatBubble(message: msg, showSpeed: isLastAi);

@@ -79,8 +79,6 @@ class LocalApiServerService extends GetxService {
       _server = null;
       isRunning.value = false;
       errorMessage.value = e.toString();
-      // Do not rethrow here, so that app initialization can continue
-      // even if the local API server fails to bind.
     } finally {
       isStarting.value = false;
     }
@@ -111,7 +109,6 @@ class LocalApiServerService extends GetxService {
     allInterfaces.value = value;
     _storage.localApiAllInterfaces = value;
     if (isRunning.value) {
-      // Restart with new binding
       await start();
     }
   }
@@ -126,7 +123,6 @@ class LocalApiServerService extends GetxService {
     _storage.localApiServerEnabled = false;
   }
 
-  /// Get the device's local network IP address.
   Future<String?> getDeviceIp() async {
     try {
       final interfaces = await NetworkInterface.list(

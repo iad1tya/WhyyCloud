@@ -30,7 +30,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initApp() async {
     try {
-      // Initialize logging first
       final log = Get.find<LogService>()..init();
 
       setState(() => _status = 'Setting up storage...');
@@ -57,7 +56,6 @@ class _SplashScreenState extends State<SplashScreen> {
       log.info('All services initialized successfully', source: 'Splash');
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // Prompt for battery optimization on Android (first launch only)
       if (mounted) {
         await BackgroundOptimizerService.checkAndPrompt(context);
       }

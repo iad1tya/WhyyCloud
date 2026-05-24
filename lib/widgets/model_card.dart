@@ -63,7 +63,6 @@ class ModelCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header row ────────────────────────────────────────
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -89,7 +88,6 @@ class ModelCard extends StatelessWidget {
 
             const SizedBox(height: 14),
 
-            // ── Model name ────────────────────────────────────────
             Text(
               model.name,
               style: TextStyle(
@@ -101,7 +99,6 @@ class ModelCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // ── Size and RAM ──────────────────────────────────────
             Wrap(
               spacing: 12,
               runSpacing: 6,
@@ -149,19 +146,16 @@ class ModelCard extends StatelessWidget {
 
             const SizedBox(height: 18),
 
-            // ── Loading progress ──────────────────────────────────
             if (isLoadingModel) ...[
               _buildLoadingProgress(context),
               const SizedBox(height: 16),
             ],
 
-            // ── Download progress with realtime stats ─────────────
             if (isCurrentlyDownloading && downloadState != null) ...[
               _buildDownloadProgress(context, downloadState!),
               const SizedBox(height: 16),
             ],
 
-            // ── Action buttons ────────────────────────────────────
             if (!isCurrentlyDownloading && !isLoadingModel)
               _buildActions(context),
           ],
@@ -175,7 +169,6 @@ class ModelCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Progress bar
         LinearPercentIndicator(
           lineHeight: 6,
           percent: loadingProgress.clamp(0.0, 1.0),
@@ -189,10 +182,8 @@ class ModelCard extends StatelessWidget {
         ),
         const SizedBox(height: 10),
 
-        // Status row
         Row(
           children: [
-            // Percentage
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -210,7 +201,6 @@ class ModelCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
 
-            // Status message
             Expanded(
               child: Text(
                 loadingStatusMsg.isNotEmpty ? loadingStatusMsg : 'Loading...',
@@ -219,7 +209,6 @@ class ModelCard extends StatelessWidget {
               ),
             ),
 
-            // Cancel button
             if (onCancelLoad != null)
               TextButton.icon(
                 onPressed: onCancelLoad,
@@ -248,7 +237,6 @@ class ModelCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Progress bar
         LinearPercentIndicator(
           lineHeight: 6,
           percent: ds.progress,
@@ -262,7 +250,6 @@ class ModelCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        // Stats row
         Row(
           children: [
             Text(
@@ -301,7 +288,6 @@ class ModelCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
 
-        // Stats detail row
         Wrap(
           spacing: 12,
           runSpacing: 4,
@@ -326,8 +312,6 @@ class ModelCard extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context) {
-    // If it's a custom model, we show the red remove icon.
-    // We use it instead of the regular 'delete file' if it's downloaded.
     final Widget removeIcon = IconButton(
       onPressed: onRemoveCustom,
       icon: const Icon(Icons.remove_circle_outline, size: 20),
@@ -409,7 +393,7 @@ class ModelCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Unload button
+
           if (onUnload != null)
             Tooltip(
               message: 'Unload model from memory',

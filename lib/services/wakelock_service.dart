@@ -4,8 +4,6 @@ import 'package:get/get.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-/// Manages wake lock (screen stays on) and Android foreground service
-/// to prevent the OS from killing downloads and inference.
 class WakelockService extends GetxService {
   final isWakeLockActive = false.obs;
 
@@ -34,13 +32,11 @@ class WakelockService extends GetxService {
         ),
       );
 
-      // Request notification permission for Android 13+
       await FlutterForegroundTask.requestNotificationPermission();
     }
     return this;
   }
 
-  /// Enable wake lock + foreground service for model download.
   Future<void> enableForDownload({String modelName = 'model'}) async {
     if (!_isMobile) return;
 
@@ -58,7 +54,6 @@ class WakelockService extends GetxService {
     }
   }
 
-  /// Update the foreground notification with download progress.
   Future<void> updateDownloadProgress({
     required String modelName,
     required double progress,
@@ -76,7 +71,6 @@ class WakelockService extends GetxService {
     } catch (_) {}
   }
 
-  /// Enable wake lock + foreground service for AI inference.
   Future<void> enableForInference({String modelName = 'AI model'}) async {
     if (!_isMobile) return;
 
@@ -94,7 +88,6 @@ class WakelockService extends GetxService {
     }
   }
 
-  /// Disable wake lock and stop foreground service.
   Future<void> disable() async {
     if (!_isMobile) return;
 

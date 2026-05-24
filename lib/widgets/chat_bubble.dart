@@ -12,7 +12,6 @@ import '../services/llm_service.dart';
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
 
-  /// If true, this is the last AI message and we show speed info
   final bool showSpeed;
 
   const ChatBubble({super.key, required this.message, this.showSpeed = false});
@@ -30,7 +29,6 @@ class ChatBubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar
           if (isUser)
             Container(
               width: 34,
@@ -61,7 +59,6 @@ class ChatBubble extends StatelessWidget {
             ),
           const SizedBox(width: 14),
 
-          // Content
           Expanded(child: _buildContent(context, isUser)),
         ],
       ),
@@ -92,7 +89,6 @@ class ChatBubble extends StatelessWidget {
       );
     }
 
-    // AI: render markdown
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,13 +156,11 @@ class ChatBubble extends StatelessWidget {
           ),
         ),
 
-        // Action row: Copy + Speed
         if (message.content.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Row(
               children: [
-                // Copy button
                 InkWell(
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: message.content));
@@ -195,7 +189,6 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
 
-                // Speed indicator (on the last AI message)
                 if (showSpeed) ...[
                   const SizedBox(width: 12),
                   Obx(() {

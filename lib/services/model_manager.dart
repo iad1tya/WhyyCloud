@@ -12,18 +12,15 @@ import '../models/ai_model_info.dart';
 import '../models/download_state.dart';
 import 'wakelock_service.dart';
 
-/// Manages model catalog, downloads, and local file discovery.
 class ModelManager extends GetxService {
   static const _remoteCatalogUrl =
       'https://raw.githubusercontent.com/iad1tya/WhyyCloud/refs/heads/main/assets/models_catalog.json';
 
   final catalog = <AiModelInfo>[].obs;
-  final downloadedModels =
-      <String>[].obs; // filenames on-disk (list for reactivity)
+  final downloadedModels = <String>[].obs;
 
-  // ── Download tracking (single reactive object) ─────────────
   final activeDownloads = <String, DownloadState>{}.obs;
-  final tick = 0.obs; // force UI refresh counter
+  final tick = 0.obs;
 
   http.Client? _httpClient;
   late String _modelsDir;
@@ -35,9 +32,7 @@ class ModelManager extends GetxService {
     return this;
   }
 
-  /// Resolve models directory.
   Future<String> _getModelsDir() async {
-    // Only check USB path on desktop platforms
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       try {
         final execDir = Platform.resolvedExecutable;
@@ -49,12 +44,9 @@ class ModelManager extends GetxService {
         if (await Directory(usbShared).exists()) {
           return usbShared;
         }
-      } catch (_) {
-        // Ignore errors resolving executable path
-      }
+      } catch (_) {}
     }
 
-    // Fall back to app documents
     final appDir = await getApplicationDocumentsDirectory();
     final modelsDir = p.join(appDir.path, 'PortableAI', 'models');
     await Directory(modelsDir).create(recursive: true);
@@ -63,12 +55,10 @@ class ModelManager extends GetxService {
 
   String get modelsDir => _modelsDir;
 
-  /// Force all Obx listeners to rebuild.
   void _notifyUI() {
     tick.value++;
   }
 
-  /// Load the embedded model catalog from assets + persisted custom models.
   Future<void> _loadCatalog() async {
     try {
       final response = await http
@@ -85,12 +75,9 @@ class ModelManager extends GetxService {
           'assets/models_catalog.json',
         );
         _applyCatalogJson(jsonStr);
-      } catch (_) {
-        // Catalog couldn't load — will be empty
-      }
+      } catch (_) {}
     }
 
-    // Load persisted custom models
     try {
       final box = Hive.box('models_meta');
       final customList =
@@ -99,7 +86,7 @@ class ModelManager extends GetxService {
         final model = AiModelInfo.fromJson(
           Map<String, dynamic>.from(raw as Map),
         );
-        // Don't add duplicates
+
         if (!catalog.any((m) => m.id == model.id)) {
           catalog.add(model);
         }
@@ -114,7 +101,6 @@ class ModelManager extends GetxService {
         .toList();
   }
 
-  /// Scan the models directory for downloaded .gguf files.
   Future<void> scanDownloaded() async {
     final dir = Directory(_modelsDir);
     if (!await dir.exists()) return;
@@ -134,23 +120,18 @@ class ModelManager extends GetxService {
   bool isModelDownloaded(AiModelInfo model) =>
       downloadedModels.contains(model.filename);
 
-  /// Is this model currently downloading?
   bool isDownloading(String filename) {
     return activeDownloads.containsKey(filename) &&
         activeDownloads[filename]!.isActive;
   }
 
-  /// Get the download state for a model (or null).
   DownloadState? getDownloadState(String filename) {
     return activeDownloads[filename];
   }
 
-  /// Download a model with real-time speed tracking.
-  /// Enables wake lock + foreground service to keep download alive.
   Future<void> downloadModel(AiModelInfo model) async {
     if (isDownloading(model.filename)) return;
 
-    // Enable wake lock + foreground service for download (fire and forget so UI updates instantly)
     WakelockService? wakelockService;
     try {
       wakelockService = Get.find<WakelockService>();
@@ -159,7 +140,6 @@ class ModelManager extends GetxService {
       debugPrint('WakelockService not available: $e');
     }
 
-    // Initialize download state instantly
     activeDownloads[model.filename] = DownloadState(
       filename: model.filename,
       totalBytes: model.sizeGb * 1024 * 1024 * 1024,
@@ -173,7 +153,6 @@ class ModelManager extends GetxService {
       _httpClient = http.Client();
       final request = http.Request('GET', Uri.parse(model.url));
 
-      // Support resume
       int existingBytes = 0;
       if (await partFile.exists()) {
         existingBytes = await partFile.length();
@@ -184,7 +163,6 @@ class ModelManager extends GetxService {
       final contentLength = response.contentLength ?? 0;
       final totalBytes = (existingBytes + contentLength).toDouble();
 
-      // Update total from actual HTTP response
       final state = activeDownloads[model.filename]!;
       state.totalBytes = totalBytes > 0 ? totalBytes : state.totalBytes;
       state.receivedBytes = existingBytes.toDouble();
@@ -199,14 +177,12 @@ class ModelManager extends GetxService {
       int lastSpeedBytes = existingBytes;
 
       await for (final chunk in response.stream) {
-        // Check if cancelled
         if (state.isCancelled) break;
 
         sink.add(chunk);
         receivedBytes += chunk.length;
         state.receivedBytes = receivedBytes.toDouble();
 
-        // Calculate speed every 500ms
         if (stopwatch.elapsedMilliseconds - lastSpeedCheck > 500) {
           final elapsed =
               (stopwatch.elapsedMilliseconds - lastSpeedCheck) / 1000;
@@ -214,9 +190,8 @@ class ModelManager extends GetxService {
           state.speedBytesPerSec = bytesDelta / elapsed;
           lastSpeedCheck = stopwatch.elapsedMilliseconds;
           lastSpeedBytes = receivedBytes;
-          _notifyUI(); // trigger rebuild
+          _notifyUI();
 
-          // Update foreground notification with progress
           if (wakelockService != null && state.totalBytes > 0) {
             final progress = state.receivedBytes / state.totalBytes;
             final speedMb = (state.speedBytesPerSec / (1024 * 1024))
@@ -234,7 +209,6 @@ class ModelManager extends GetxService {
       await sink.close();
 
       if (!state.isCancelled) {
-        // Rename .part to final
         await partFile.rename(filePath);
         if (!downloadedModels.contains(model.filename)) {
           downloadedModels.add(model.filename);
@@ -253,7 +227,6 @@ class ModelManager extends GetxService {
       _httpClient?.close();
       _httpClient = null;
 
-      // Disable wake lock if no other downloads are active
       if (activeDownloads.isEmpty) {
         try {
           await wakelockService?.disable();
@@ -262,7 +235,6 @@ class ModelManager extends GetxService {
     }
   }
 
-  /// Cancel an active download.
   void cancelDownload(String filename) {
     if (activeDownloads.containsKey(filename)) {
       activeDownloads[filename]!.isCancelled = true;
@@ -274,7 +246,6 @@ class ModelManager extends GetxService {
     _notifyUI();
   }
 
-  /// Delete a downloaded model.
   Future<void> deleteModel(String filename) async {
     final file = File(p.join(_modelsDir, filename));
     if (await file.exists()) {
@@ -283,7 +254,6 @@ class ModelManager extends GetxService {
     downloadedModels.remove(filename);
   }
 
-  /// Move a model file from cache to the models directory (instant on most file systems).
   Future<void> moveModel(String sourcePath, String filename) async {
     final destPath = p.join(_modelsDir, filename);
     if (sourcePath == destPath) return;
@@ -291,11 +261,9 @@ class ModelManager extends GetxService {
     final sourceFile = File(sourcePath);
     if (!await sourceFile.exists()) return;
 
-    // Try to move the file instantly (rename)
     try {
       await sourceFile.rename(destPath);
     } catch (e) {
-      // Fallback to copy if rename fails (e.g. across different partitions)
       await sourceFile.copy(destPath);
       await sourceFile.delete();
     }
@@ -305,7 +273,6 @@ class ModelManager extends GetxService {
     }
   }
 
-  /// Import a model directly from a stream (useful to bypass FilePicker caching on Android/iOS).
   Future<void> importModelFromStream({
     required String filename,
     required Stream<List<int>> stream,
@@ -355,7 +322,6 @@ class ModelManager extends GetxService {
     }
   }
 
-  /// Import a model file from external path with progress tracking.
   Future<void> importModel(
     String sourcePath, {
     Function(double)? onProgress,
@@ -411,19 +377,16 @@ class ModelManager extends GetxService {
     }
   }
 
-  /// Add custom model to catalog and persist it.
   void addCustomModel(AiModelInfo model) {
     catalog.add(model);
     _persistCustomModels();
   }
 
-  /// Remove a custom model from catalog and persistence.
   void removeCustomModel(String id) {
     catalog.removeWhere((m) => m.id == id);
     _persistCustomModels();
   }
 
-  /// Save all custom models to Hive.
   void _persistCustomModels() {
     final box = Hive.box('models_meta');
     final customList = catalog
