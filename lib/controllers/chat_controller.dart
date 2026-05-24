@@ -87,8 +87,8 @@ class ChatController extends GetxController {
     if (chat == null) return;
 
     final isImageAttachment =
-      attachmentMimeType?.startsWith('image/') == true &&
-      (attachmentBase64 != null && attachmentBase64.isNotEmpty);
+        attachmentMimeType?.startsWith('image/') == true &&
+        (attachmentBase64 != null && attachmentBase64.isNotEmpty);
 
     final content = trimmedText.isNotEmpty
         ? trimmedText
@@ -154,11 +154,14 @@ class ChatController extends GetxController {
     } finally {
       // Clean up any trailing stop tokens or whitespace
       aiMsg.content = aiMsg.content
-          .replaceAll(RegExp(
-            r'<\|end\|>|<\|eot_id\|>|<\|endoftext\|>|<\|im_end\|>|<\|im_start\|>'
-            r'|<end_of_turn>|<start_of_turn>|<\|assistant\|>|<\|user\|>|<\|system\|>'
-            r'|<\|pad\|>|</s>|<s>|\[INST\]|\[/INST\]|\[end\]'
-          ), '')
+          .replaceAll(
+            RegExp(
+              r'<\|end\|>|<\|eot_id\|>|<\|endoftext\|>|<\|im_end\|>|<\|im_start\|>'
+              r'|<end_of_turn>|<start_of_turn>|<\|assistant\|>|<\|user\|>|<\|system\|>'
+              r'|<\|pad\|>|</s>|<s>|\[INST\]|\[/INST\]|\[end\]',
+            ),
+            '',
+          )
           .trim();
       isGenerating.value = false;
       streamedResponse.value = '';

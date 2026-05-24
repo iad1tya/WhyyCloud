@@ -50,38 +50,54 @@ class LogsScreen extends StatelessWidget {
                   const Spacer(),
                   // Copy all logs
                   IconButton(
-                    icon: Icon(Icons.copy_rounded, size: 20, color: context.textM),
+                    icon: Icon(
+                      Icons.copy_rounded,
+                      size: 20,
+                      color: context.textM,
+                    ),
                     tooltip: 'Copy all logs',
                     onPressed: () {
                       final text = logService.exportAll();
                       Clipboard.setData(ClipboardData(text: text));
-                      Get.snackbar(
-                        'Copied',
-                        'All logs copied to clipboard. Share on Telegram or GitHub!',
-                        snackPosition: SnackPosition.BOTTOM,
-                        duration: const Duration(seconds: 2),
-                      );
                     },
                   ),
                   // Clear logs
                   IconButton(
-                    icon: Icon(Icons.delete_outline_rounded, size: 20, color: context.textD),
+                    icon: Icon(
+                      Icons.delete_outline_rounded,
+                      size: 20,
+                      color: context.textD,
+                    ),
                     tooltip: 'Clear logs',
                     onPressed: () {
                       Get.dialog<bool?>(
                         AlertDialog(
                           backgroundColor: context.bgPanel,
-                          title: Text('Clear Logs?', style: TextStyle(color: context.text)),
-                          content: Text('This will remove all current logs. Continue?', style: TextStyle(color: context.textM)),
+                          title: Text(
+                            'Clear Logs?',
+                            style: TextStyle(color: context.text),
+                          ),
+                          content: Text(
+                            'This will remove all current logs. Continue?',
+                            style: TextStyle(color: context.textM),
+                          ),
                           actions: [
-                            TextButton(onPressed: () => Get.back(result: false), child: Text('Cancel', style: TextStyle(color: context.textD))),
-                            ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('Clear')),
+                            TextButton(
+                              onPressed: () => Get.back(result: false),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(color: context.textD),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Get.back(result: true),
+                              child: const Text('Clear'),
+                            ),
                           ],
                         ),
                       ).then((confirmed) {
                         if (confirmed == true) {
                           logService.clear();
-                          Get.snackbar('Cleared', 'All logs cleared.', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
                         }
                       });
                     },
@@ -109,7 +125,11 @@ class LogsScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.article_outlined, size: 48, color: context.textD),
+                      Icon(
+                        Icons.article_outlined,
+                        size: 48,
+                        color: context.textD,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'No logs yet.',
@@ -121,14 +141,16 @@ class LogsScreen extends StatelessWidget {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 itemCount: filtered.length,
                 itemBuilder: (context, index) {
                   final entry = filtered[index];
                   return GestureDetector(
                     onLongPress: () {
                       Clipboard.setData(ClipboardData(text: entry.formatted));
-                      Get.snackbar('Copied', 'Log entry copied to clipboard.', snackPosition: SnackPosition.BOTTOM);
                     },
                     child: _LogTile(entry: entry),
                   );
@@ -155,15 +177,13 @@ class LogsScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                    _saveLogsToFile(logService).then((path) {
-                      if (path != null) {
-                        Get.snackbar('Saved', 'Logs saved to: $path', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 3));
-                      } else {
-                        final text = logService.exportAll();
-                        Clipboard.setData(ClipboardData(text: text));
-                        Get.snackbar('Logs Copied!', 'Paste in Telegram or GitHub Issues to share with developers.', snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 3));
-                      }
-                    });
+                  _saveLogsToFile(logService).then((path) {
+                    if (path != null) {
+                    } else {
+                      final text = logService.exportAll();
+                      Clipboard.setData(ClipboardData(text: text));
+                    }
+                  });
                 },
                 label: const Text('Copy Logs to Share'),
                 style: ElevatedButton.styleFrom(
@@ -194,27 +214,29 @@ class _FilterBar extends StatelessWidget {
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Obx(() => ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _chip(context, 'All', 'ALL'),
-              _chip(context, 'Info', 'INFO'),
-              _chip(context, 'Warnings', 'WARN'),
-              _chip(context, 'Errors', 'ERROR'),
-            ],
-          )),
+      child: Obx(
+        () => ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            _chip(context, 'All', 'ALL'),
+            _chip(context, 'Info', 'INFO'),
+            _chip(context, 'Warnings', 'WARN'),
+            _chip(context, 'Errors', 'ERROR'),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _chip(BuildContext context, String label, String value) {
     final selected = _activeFilter.value == value;
     final color = value == 'ERROR'
-      ? AppColors.red
-      : value == 'WARN'
+        ? AppColors.red
+        : value == 'WARN'
         ? AppColors.orange
         : value == 'INFO'
-          ? AppColors.green
-          : Colors.white;
+        ? AppColors.green
+        : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
@@ -300,7 +322,9 @@ class _LogTile extends StatelessWidget {
                       const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1),
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: levelColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(3),
@@ -339,7 +363,9 @@ class _LogTile extends StatelessWidget {
 Future<String?> _saveLogsToFile(LogService logService) async {
   try {
     final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/whyycloud_logs_${DateTime.now().millisecondsSinceEpoch}.txt');
+    final file = File(
+      '${dir.path}/whyycloud_logs_${DateTime.now().millisecondsSinceEpoch}.txt',
+    );
     await file.writeAsString(logService.exportAll());
     return file.path;
   } catch (e) {

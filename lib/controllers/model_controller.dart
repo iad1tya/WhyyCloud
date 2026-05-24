@@ -18,9 +18,11 @@ class ModelController extends GetxController {
 
   // ── Observable State ──────────────────────────────────────────
   final selectedModelFilename = RxnString();
-  final loadingModelFilename = RxnString(); // Track which one is currently loading
+  final loadingModelFilename =
+      RxnString(); // Track which one is currently loading
   final isLoadingModel = false.obs;
-  final isImportingModel = false.obs; // True when copying file from internal storage
+  final isImportingModel =
+      false.obs; // True when copying file from internal storage
   final loadingStatusMsg = ''.obs;
   final loadingProgress = 0.0.obs; // 0.0 to 1.0
   final loadError = ''.obs;
@@ -62,23 +64,18 @@ class ModelController extends GetxController {
     if (!confirmed) return;
 
     LogService? log;
-    try { log = Get.find<LogService>(); } catch (_) {}
-    log?.info('Starting download: ${model.name} (${model.sizeGb} GB)', source: 'Download');
+    try {
+      log = Get.find<LogService>();
+    } catch (_) {}
+    log?.info(
+      'Starting download: ${model.name} (${model.sizeGb} GB)',
+      source: 'Download',
+    );
     try {
       await _manager.downloadModel(model);
       log?.info('Download complete: ${model.name}', source: 'Download');
-      Get.snackbar(
-        'Download Complete',
-        '${model.name} is ready!',
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } catch (e) {
       log?.error('Download failed: ${model.name} — $e', source: 'Download');
-      Get.snackbar(
-        'Download Failed',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
     }
   }
 
@@ -126,7 +123,7 @@ class ModelController extends GetxController {
     try {
       final path = _manager.getModelPathByFilename(filename);
       final file = File(path);
-      
+
       if (await file.exists()) {
         final sizeGb = (await file.length()) / (1024 * 1024 * 1024);
         final confirmed = await _confirmLargeModel(sizeGb);
@@ -148,13 +145,10 @@ class ModelController extends GetxController {
     } catch (e) {
       loadError.value = e.toString();
       LogService? log;
-      try { log = Get.find<LogService>(); } catch (_) {}
+      try {
+        log = Get.find<LogService>();
+      } catch (_) {}
       log?.error('Load failed: $filename — $e', source: 'Model');
-      Get.snackbar(
-        'Load Failed',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } finally {
       isLoadingModel.value = false;
       loadingStatusMsg.value = '';
@@ -171,7 +165,7 @@ class ModelController extends GetxController {
     loadingProgress.value = 0.0;
     loadingModelFilename.value = null;
   }
-  
+
   void cancelImport() {
     isImportingModel.value = false;
     loadingStatusMsg.value = '';
@@ -194,18 +188,7 @@ class ModelController extends GetxController {
   Future<void> clearCache() async {
     try {
       await FilePicker.platform.clearTemporaryFiles();
-      Get.snackbar(
-        'Cache Cleared',
-        'Temporary files have been removed.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Clear Failed',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
+    } catch (e) {}
   }
 
   Timer? _pulseTimer;
@@ -241,7 +224,8 @@ class ModelController extends GetxController {
       title: 'Large Model Warning',
       titlePadding: const EdgeInsets.only(top: 20, left: 20, right: 20),
       contentPadding: const EdgeInsets.all(20),
-      middleText: 'This model is ${sizeGb.toStringAsFixed(1)} GB.\n\nDevices with less than 8GB of RAM may crash or run out of storage while processing this model.\n\nAre you sure you want to proceed?',
+      middleText:
+          'This model is ${sizeGb.toStringAsFixed(1)} GB.\n\nDevices with less than 8GB of RAM may crash or run out of storage while processing this model.\n\nAre you sure you want to proceed?',
       textConfirm: 'Proceed',
       textCancel: 'Cancel',
       confirmTextColor: Colors.white,
@@ -279,13 +263,8 @@ class ModelController extends GetxController {
         _stopCachingPulse();
         final file = result.files.single;
         final name = file.name;
-        
+
         if (!name.endsWith('.gguf')) {
-          Get.snackbar(
-            'Invalid File',
-            'Please select a .gguf model file.',
-            snackPosition: SnackPosition.BOTTOM,
-          );
           return;
         }
 
@@ -316,7 +295,7 @@ class ModelController extends GetxController {
 
         // Check if a model with this filename already exists in the catalog
         final exists = _manager.catalog.any((m) => m.filename == name);
-        
+
         if (!exists) {
           // Add to catalog so it shows up in the UI
           final customModel = AiModelInfo(
@@ -332,19 +311,8 @@ class ModelController extends GetxController {
           );
           _manager.addCustomModel(customModel);
         }
-
-        Get.snackbar(
-          'Import Complete',
-          'Model imported successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-        );
       }
     } catch (e) {
-      Get.snackbar(
-        'Import Error',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } finally {
       _stopCachingPulse();
       isImportingModel.value = false;
@@ -372,18 +340,13 @@ class ModelController extends GetxController {
           .toList();
 
       if (ggufFiles.isEmpty) {
-        Get.snackbar(
-          'No Models Found',
-          'No .gguf files found in that directory.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
         return;
       }
 
       int imported = 0;
       for (int i = 0; i < ggufFiles.length; i++) {
         final file = ggufFiles[i] as File;
-        
+
         final sizeGb = (await file.length()) / (1024 * 1024 * 1024);
         final confirmed = await _confirmLargeModel(sizeGb);
         if (!confirmed) continue;
@@ -398,9 +361,9 @@ class ModelController extends GetxController {
           onProgress: (p) => loadingProgress.value = p,
           checkCancelled: () => !isImportingModel.value,
         );
-        
+
         if (!isImportingModel.value) return; // Cancelled
-        
+
         final fileName = file.uri.pathSegments.last;
         final exists = _manager.catalog.any((m) => m.filename == fileName);
 
@@ -419,21 +382,10 @@ class ModelController extends GetxController {
           );
           _manager.addCustomModel(customModel);
         }
-        
+
         imported++;
       }
-
-      Get.snackbar(
-        'Import Complete',
-        '$imported model(s) imported!',
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } catch (e) {
-      Get.snackbar(
-        'Import Error',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-      );
     } finally {
       isImportingModel.value = false;
       loadingStatusMsg.value = '';
@@ -458,12 +410,16 @@ class ModelController extends GetxController {
 
   /// Add a custom model from a URL.
   /// Does a HEAD request first to fetch file size.
-  Future<void> addCustomUrlModel({required String name, required String url}) async {
+  Future<void> addCustomUrlModel({
+    required String name,
+    required String url,
+  }) async {
     // Extract filename from URL
     final uri = Uri.parse(url);
     String filename = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
     if (!filename.endsWith('.gguf')) {
-      filename = '${name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}.gguf';
+      filename =
+          '${name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}.gguf';
     }
 
     // Fetch file size via HEAD request
@@ -475,7 +431,9 @@ class ModelController extends GetxController {
       final contentLength = response.contentLength;
       client.close();
       if (contentLength > 0) {
-        sizeGb = double.parse((contentLength / (1024 * 1024 * 1024)).toStringAsFixed(2));
+        sizeGb = double.parse(
+          (contentLength / (1024 * 1024 * 1024)).toStringAsFixed(2),
+        );
       }
     } catch (_) {
       // HEAD failed — size stays 0 (unknown)
@@ -505,7 +463,5 @@ class ModelController extends GetxController {
     _manager.addCustomModel(model);
 
     final sizeStr = sizeGb > 0 ? ' (${sizeGb} GB)' : '';
-    Get.snackbar('Model Added', '$name$sizeStr added to your library!',
-        snackPosition: SnackPosition.BOTTOM);
   }
 }

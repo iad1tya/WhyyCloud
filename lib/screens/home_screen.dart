@@ -134,14 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isListening = false;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(error.errorMsg.isNotEmpty
-            ? error.errorMsg
-            : 'Voice input is not available right now'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   void _handleSpeechResult(dynamic result) {
@@ -207,12 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!_voiceServicesReady) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Voice input is not available on this device'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+
       return;
     }
 
@@ -308,7 +295,10 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _pendingAttachmentName = file.name;
       _pendingAttachmentPath = file.path;
-      _pendingAttachmentMimeType = _guessMimeType(file.name, imageOnly: imageOnly);
+      _pendingAttachmentMimeType = _guessMimeType(
+        file.name,
+        imageOnly: imageOnly,
+      );
       _pendingAttachmentBase64 = bytes != null ? base64Encode(bytes) : null;
     });
   }
@@ -466,12 +456,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 80,
                           height: 80,
                           child: CircularProgressIndicator(
-                            value: progress <= 0 ? null : progress.clamp(0.0, 1.0),
+                            value: progress <= 0
+                                ? null
+                                : progress.clamp(0.0, 1.0),
                             strokeWidth: 5,
                             backgroundColor: context.border,
-                            valueColor: AlwaysStoppedAnimation(
-                              context.accent,
-                            ),
+                            valueColor: AlwaysStoppedAnimation(context.accent),
                           ),
                         ),
                         if (percent > 0)
@@ -511,14 +501,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Status message
                   Text(
                     msg.isNotEmpty ? msg : 'Importing file...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.textM,
-                    ),
+                    style: TextStyle(fontSize: 12, color: context.textM),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Hint for large models
                   if (progress == 0)
                     Text(
@@ -572,9 +559,7 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: Drawer(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(32),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         child: SafeArea(
           child: Container(
             margin: const EdgeInsets.fromLTRB(12, 12, 12, 12),
@@ -584,7 +569,9 @@ class _HomeScreenState extends State<HomeScreen> {
               border: Border.all(color: context.borderFaint, width: 0.8),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: context.isDark ? 0.45 : 0.08),
+                  color: Colors.black.withValues(
+                    alpha: context.isDark ? 0.45 : 0.08,
+                  ),
                   blurRadius: 28,
                   offset: const Offset(8, 0),
                 ),
@@ -598,9 +585,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                     decoration: BoxDecoration(
-                      color: context.bgPanel.withValues(alpha: context.isDark ? 0.72 : 1),
+                      color: context.bgPanel.withValues(
+                        alpha: context.isDark ? 0.72 : 1,
+                      ),
                       border: Border(
-                        bottom: BorderSide(color: context.borderFaint, width: 1),
+                        bottom: BorderSide(
+                          color: context.borderFaint,
+                          width: 1,
+                        ),
                       ),
                     ),
                     child: Row(
@@ -721,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-        color: selected
+      color: selected
           ? context.accent.withValues(alpha: context.isDark ? 0.16 : 0.10)
           : Colors.transparent,
       borderRadius: BorderRadius.circular(18),
@@ -730,10 +722,12 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              decoration: BoxDecoration(
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: selected ? context.accent.withValues(alpha: 0.26) : context.borderFaint,
+              color: selected
+                  ? context.accent.withValues(alpha: 0.26)
+                  : context.borderFaint,
             ),
           ),
           child: Row(
@@ -773,10 +767,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // Mobile top bar — minimal with SafeArea for status bar
         Container(
           color: context.bgPanel,
-          child: SafeArea(
-            bottom: false,
-            child: _buildMobileTopBar(),
-          ),
+          child: SafeArea(bottom: false, child: _buildMobileTopBar()),
         ),
         // Model loading progress banner
         Obx(() {
@@ -789,7 +780,9 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               color: AppColors.orange.withValues(alpha: 0.1),
               border: Border(
-                bottom: BorderSide(color: AppColors.orange.withValues(alpha: 0.3)),
+                bottom: BorderSide(
+                  color: AppColors.orange.withValues(alpha: 0.3),
+                ),
               ),
             ),
             child: Column(
@@ -814,7 +807,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.orange.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
@@ -856,7 +852,9 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: context.bgPanel,
-        border: Border(bottom: BorderSide(color: context.borderFaint, width: 1)),
+        border: Border(
+          bottom: BorderSide(color: context.borderFaint, width: 1),
+        ),
       ),
       child: Row(
         children: [
@@ -1013,9 +1011,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() => _mobileTabIndex = 1);
                       },
                       child: Text(
-                          'Browse All',
-                          style: TextStyle(fontSize: 13, color: context.accent),
-                        ),
+                        'Browse All',
+                        style: TextStyle(fontSize: 13, color: context.accent),
+                      ),
                     ),
                   ],
                 ),
@@ -1214,8 +1212,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icons.keyboard_arrow_down_rounded,
                       size: 20,
                       color: context.textM,
-                      ),
-                    ],
+                    ),
+                  ],
                 ),
               ),
             );
@@ -1396,7 +1394,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 14, color: context.textM),
                 textAlign: TextAlign.center,
               ),
-              ),
+            ),
           ],
         ),
       ),
@@ -1452,7 +1450,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+                          contentPadding: const EdgeInsets.fromLTRB(
+                            10,
+                            4,
+                            10,
+                            4,
+                          ),
                         ),
                       ),
                     ),
@@ -1522,17 +1525,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 8),
                         _circleButton(
-                          icon: _isListening ? Icons.mic_off_rounded : Icons.mic_rounded,
+                          icon: _isListening
+                              ? Icons.mic_off_rounded
+                              : Icons.mic_rounded,
                           color: _isListening ? AppColors.red : context.bgHover,
                           onTap: () => _startVoiceInput(),
-                          tooltip: _isListening ? 'Stop voice input' : 'Voice chat',
+                          tooltip: _isListening
+                              ? 'Stop voice input'
+                              : 'Voice chat',
                         ),
                         const SizedBox(width: 8),
                         _circleButton(
-                          icon: _speakReplies ? Icons.volume_up_rounded : Icons.volume_off_rounded,
-                          color: _speakReplies ? context.bgHover : context.bgHover.withValues(alpha: 0.7),
+                          icon: _speakReplies
+                              ? Icons.volume_up_rounded
+                              : Icons.volume_off_rounded,
+                          color: _speakReplies
+                              ? context.bgHover
+                              : context.bgHover.withValues(alpha: 0.7),
                           onTap: _toggleReplySpeech,
-                          tooltip: _speakReplies ? 'Disable reply voice' : 'Enable reply voice',
+                          tooltip: _speakReplies
+                              ? 'Disable reply voice'
+                              : 'Enable reply voice',
                         ),
                         const SizedBox(width: 8),
                         Obx(
@@ -1609,7 +1622,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAttachmentPreview(BuildContext context) {
-    final isImage = (_pendingAttachmentMimeType ?? '').startsWith('image/') &&
+    final isImage =
+        (_pendingAttachmentMimeType ?? '').startsWith('image/') &&
         (_pendingAttachmentBase64?.isNotEmpty ?? false);
 
     return Container(
@@ -1639,7 +1653,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: context.accent.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.insert_drive_file_rounded, color: context.accent),
+              child: Icon(
+                Icons.insert_drive_file_rounded,
+                color: context.accent,
+              ),
             ),
           const SizedBox(width: 12),
           Expanded(
@@ -1679,7 +1696,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
     required String tooltip,
   }) {
-    final iconColor = ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+    final iconColor =
+        ThemeData.estimateBrightnessForColor(color) == Brightness.dark
         ? Colors.white
         : Colors.black;
     return Tooltip(

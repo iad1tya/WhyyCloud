@@ -14,13 +14,12 @@ class ApiEndpointsScreen extends StatefulWidget {
 
 class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
   final apiServer = Get.find<LocalApiServerService>();
-  
+
   bool _testing = false;
   String _testResult = '';
 
   Future<void> _testEndpoint(String path) async {
     if (!apiServer.isRunning.value) {
-      Get.snackbar('Error', 'API server is not running', snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -32,10 +31,14 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
     try {
       // Always use localhost for internal testing, even if bound to 0.0.0.0
       final url = 'http://127.0.0.1:${apiServer.port.value}$path';
-      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 5));
-      
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 5));
+
       if (response.statusCode == 200) {
-        final jsonStr = const JsonEncoder.withIndent('  ').convert(jsonDecode(response.body));
+        final jsonStr = const JsonEncoder.withIndent(
+          '  ',
+        ).convert(jsonDecode(response.body));
         setState(() {
           _testResult = 'Status: 200 OK\n\n$jsonStr';
         });
@@ -73,12 +76,16 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             // Status Header
-                Container(
+            Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: running ? AppColors.green.withValues(alpha: 0.1) : AppColors.red.withValues(alpha: 0.1),
+                color: running
+                    ? AppColors.green.withValues(alpha: 0.1)
+                    : AppColors.red.withValues(alpha: 0.1),
                 border: Border.all(
-                  color: running ? AppColors.green.withValues(alpha: 0.3) : AppColors.red.withValues(alpha: 0.3),
+                  color: running
+                      ? AppColors.green.withValues(alpha: 0.3)
+                      : AppColors.red.withValues(alpha: 0.3),
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -103,7 +110,10 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
                         if (running)
                           Text(
                             'Base URL: $baseUrl',
-                            style: TextStyle(color: context.textD, fontSize: 12),
+                            style: TextStyle(
+                              color: context.textD,
+                              fontSize: 12,
+                            ),
                           ),
                       ],
                     ),
@@ -115,7 +125,11 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
 
             Text(
               'How to Access',
-              style: TextStyle(color: context.text, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: context.text,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -133,13 +147,15 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
               onTest: () => _testEndpoint('/v1/models'),
             ),
             const SizedBox(height: 16),
-            
+
             _buildEndpointCard(
               context: context,
               method: 'POST',
               path: '/v1/chat/completions',
-              description: 'Generate a chat completion. Accepts messages array in standard format.',
-              onTest: null, // POST is harder to just "test" with a simple button without a payload builder
+              description:
+                  'Generate a chat completion. Accepts messages array in standard format.',
+              onTest:
+                  null, // POST is harder to just "test" with a simple button without a payload builder
             ),
 
             const SizedBox(height: 32),
@@ -148,7 +164,11 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
             if (_testResult.isNotEmpty) ...[
               Text(
                 'Test Output',
-                style: TextStyle(color: context.text, fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: context.text,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -168,7 +188,7 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
                   ),
                 ),
               ),
-            ]
+            ],
           ],
         );
       }),
@@ -199,19 +219,22 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: methodColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                    child: Text(
-                      method,
-                      style: TextStyle(
-                        color: methodColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                  child: Text(
+                    method,
+                    style: TextStyle(
+                      color: methodColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -228,16 +251,32 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
                   ElevatedButton(
                     onPressed: _testing ? null : onTest,
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) {
-                        if (states.contains(WidgetState.disabled)) return context.borderFaint;
+                      backgroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                      ) {
+                        if (states.contains(WidgetState.disabled))
+                          return context.borderFaint;
                         return context.accent.withValues(alpha: 0.18);
                       }),
-                      foregroundColor: WidgetStateProperty.resolveWith((states) {
-                        final bg = states.contains(WidgetState.disabled) ? context.borderFaint : context.accent.withValues(alpha: 0.18);
-                        return ThemeData.estimateBrightnessForColor(bg) == Brightness.dark ? Colors.white : Colors.black;
+                      foregroundColor: WidgetStateProperty.resolveWith((
+                        states,
+                      ) {
+                        final bg = states.contains(WidgetState.disabled)
+                            ? context.borderFaint
+                            : context.accent.withValues(alpha: 0.18);
+                        return ThemeData.estimateBrightnessForColor(bg) ==
+                                Brightness.dark
+                            ? Colors.white
+                            : Colors.black;
                       }),
-                      side: WidgetStateProperty.all(BorderSide(color: context.accent.withValues(alpha: 0.45))),
-                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12, vertical: 0)),
+                      side: WidgetStateProperty.all(
+                        BorderSide(
+                          color: context.accent.withValues(alpha: 0.45),
+                        ),
+                      ),
+                      padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      ),
                       minimumSize: WidgetStateProperty.all(const Size(60, 30)),
                     ),
                     child: const Text('Test', style: TextStyle(fontSize: 12)),

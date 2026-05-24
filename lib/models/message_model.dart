@@ -54,13 +54,11 @@ class MessageModel extends HiveObject {
   bool get isSystem => role == MessageRole.system;
 
   bool get hasImageAttachment => imageBase64 != null && imageBase64!.isNotEmpty;
-  bool get hasFileAttachment => attachmentPath != null && attachmentPath!.isNotEmpty;
+  bool get hasFileAttachment =>
+      attachmentPath != null && attachmentPath!.isNotEmpty;
   bool get hasAttachment => hasImageAttachment || hasFileAttachment;
 
   Map<String, String> toLlamaMessage() {
-    return {
-      'role': role.name,
-      'content': content,
-    };
+    return {'role': role.name, 'content': content};
   }
 }

@@ -2,11 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_colors.dart';
 import '../controllers/chat_controller.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/model_controller.dart';
+import '../controllers/update_controller.dart';
 import '../routes/app_routes.dart';
 import '../services/local_api_server_service.dart';
 import '../services/model_manager.dart';
@@ -74,7 +76,9 @@ class _SettingsBody extends StatelessWidget {
                   _actionRow(
                     context,
                     title: 'Global Prompt',
-                    value: chatCtrl.systemPrompt.value.isEmpty ? 'Default' : 'Custom',
+                    value: chatCtrl.systemPrompt.value.isEmpty
+                        ? 'Default'
+                        : 'Custom',
                     onTap: () => _showPromptEditor(context, chatCtrl),
                   ),
                 ],
@@ -86,54 +90,46 @@ class _SettingsBody extends StatelessWidget {
               _optionSection(
                 context,
                 children: [
-                  Obx(() => _toggleRow(
-                        context,
-                        title: 'Local API server',
-                        value: apiServer.isRunning.value,
-                        valueLabel: apiServer.isRunning.value ? 'On' : 'Off',
-                        onChanged: apiServer.isStarting.value
-                            ? null
-                            : (enabled) async {
-                                try {
-                                  if (enabled) {
-                                    await apiServer.start();
-                                  } else {
-                                    await apiServer.stop();
-                                  }
-                                } catch (e) {
-                                  Get.snackbar(
-                                    'Local API Error',
-                                    e.toString(),
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
+                  Obx(
+                    () => _toggleRow(
+                      context,
+                      title: 'Local API server',
+                      value: apiServer.isRunning.value,
+                      valueLabel: apiServer.isRunning.value ? 'On' : 'Off',
+                      onChanged: apiServer.isStarting.value
+                          ? null
+                          : (enabled) async {
+                              try {
+                                if (enabled) {
+                                  await apiServer.start();
+                                } else {
+                                  await apiServer.stop();
                                 }
-                              },
-                      )),
+                              } catch (e) {}
+                            },
+                    ),
+                  ),
                   _actionRow(
                     context,
                     title: 'API Port',
                     value: apiServer.port.value.toString(),
                     onTap: () => _showPortEditor(context, apiServer),
                   ),
-                  Obx(() => _toggleRow(
-                        context,
-                        title: 'Allow External Connections',
-                        value: apiServer.allInterfaces.value,
-                        valueLabel: apiServer.allInterfaces.value ? 'On' : 'Off',
-                        onChanged: apiServer.isStarting.value
-                            ? null
-                            : (enabled) async {
-                                try {
-                                  await apiServer.setAllInterfaces(enabled);
-                                } catch (e) {
-                                  Get.snackbar(
-                                    'Settings Error',
-                                    e.toString(),
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                }
-                              },
-                      )),
+                  Obx(
+                    () => _toggleRow(
+                      context,
+                      title: 'Allow External Connections',
+                      value: apiServer.allInterfaces.value,
+                      valueLabel: apiServer.allInterfaces.value ? 'On' : 'Off',
+                      onChanged: apiServer.isStarting.value
+                          ? null
+                          : (enabled) async {
+                              try {
+                                await apiServer.setAllInterfaces(enabled);
+                              } catch (e) {}
+                            },
+                    ),
+                  ),
                   _actionRow(
                     context,
                     title: 'Sample Endpoints',
@@ -142,12 +138,14 @@ class _SettingsBody extends StatelessWidget {
                   ),
                 ],
               ),
-              Obx(() => apiServer.isRunning.value
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: _localApiInfoCard(context, apiServer),
-                    )
-                  : const SizedBox.shrink()),
+              Obx(
+                () => apiServer.isRunning.value
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: _localApiInfoCard(context, apiServer),
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
               const SizedBox(height: 14),
               _sectionTitle(context, 'System'),
@@ -175,11 +173,8 @@ class _SettingsBody extends StatelessWidget {
                     title: 'Model Storage',
                     value: 'Copy',
                     onTap: () async {
-                      await Clipboard.setData(ClipboardData(text: modelManager.modelsDir));
-                      Get.snackbar(
-                        'Path Copied',
-                        'Model storage path copied to clipboard.',
-                        snackPosition: SnackPosition.BOTTOM,
+                      await Clipboard.setData(
+                        ClipboardData(text: modelManager.modelsDir),
                       );
                     },
                   ),
@@ -195,6 +190,79 @@ class _SettingsBody extends StatelessWidget {
                     value: 'Clear',
                     onTap: () async {
                       await Get.find<ModelController>().clearCache();
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+              _sectionTitle(context, 'Updates'),
+              const SizedBox(height: 8),
+              _optionSection(
+                context,
+                children: [
+                  GetX<UpdateController>(
+                    init: Get.find<UpdateController>(),
+                    builder: (updateCtrl) {
+                      return _actionRow(
+                        context,
+                        title: 'Check for updates',
+                        value: updateCtrl.isChecking.value ? 'Checking...' : '',
+                        onTap: () async {
+                          if (updateCtrl.isChecking.value) return;
+                          await updateCtrl.checkForUpdates();
+                          if (updateCtrl.isUpdateAvailable.value) {
+                            _showUpdateDialog(context, updateCtrl);
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+              _sectionTitle(context, 'Find us on'),
+              const SizedBox(height: 8),
+              _optionSection(
+                context,
+                children: [
+                  _actionRow(
+                    context,
+                    title: 'Star the repo',
+                    value: '',
+                    onTap: () async {
+                      final url = Uri.parse(
+                        'https://github.com/iad1tya/WhyyCloud',
+                      );
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                  ),
+                  _actionRow(
+                    context,
+                    title: 'Follow dev on Instagram',
+                    value: '',
+                    onTap: () async {
+                      final url = Uri.parse('https://instagram.com/iad1tya');
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                  ),
+                  _actionRow(
+                    context,
+                    title: 'Follow dev on X',
+                    value: '',
+                    onTap: () async {
+                      final url = Uri.parse('https://x.com/xad1tya');
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
                     },
                   ),
                 ],
@@ -275,7 +343,9 @@ class _SettingsBody extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: IconButton(
                 icon: Icon(
-                  showBackButton ? Icons.arrow_back_rounded : Icons.menu_rounded,
+                  showBackButton
+                      ? Icons.arrow_back_rounded
+                      : Icons.menu_rounded,
                   size: 22,
                   color: context.text,
                 ),
@@ -368,11 +438,7 @@ class _SettingsBody extends StatelessWidget {
               ),
               const SizedBox(width: 8),
             ],
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: context.textD,
-            ),
+            Icon(Icons.chevron_right_rounded, size: 20, color: context.textD),
           ],
         ),
       ),
@@ -464,7 +530,10 @@ class _SettingsBody extends StatelessWidget {
     }
   }
 
-  Widget _localApiInfoCard(BuildContext context, LocalApiServerService apiServer) {
+  Widget _localApiInfoCard(
+    BuildContext context,
+    LocalApiServerService apiServer,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -494,7 +563,10 @@ class _SettingsBody extends StatelessWidget {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.green.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
@@ -519,9 +591,17 @@ class _SettingsBody extends StatelessWidget {
             const SizedBox(height: 8),
             _infoRow(context, 'Models endpoint', 'GET $baseUrl/models'),
             const SizedBox(height: 8),
-            _infoRow(context, 'Chat endpoint', 'POST $baseUrl/chat/completions'),
+            _infoRow(
+              context,
+              'Chat endpoint',
+              'POST $baseUrl/chat/completions',
+            ),
             const SizedBox(height: 8),
-            _infoRow(context, 'Binding', external ? 'All network interfaces' : 'Local device only'),
+            _infoRow(
+              context,
+              'Binding',
+              external ? 'All network interfaces' : 'Local device only',
+            ),
             if (external) ...[
               const SizedBox(height: 8),
               _infoRow(
@@ -559,18 +639,17 @@ class _SettingsBody extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              color: context.text,
-              fontSize: 12,
-              height: 1.35,
-            ),
+            style: TextStyle(color: context.text, fontSize: 12, height: 1.35),
           ),
         ),
       ],
     );
   }
 
-  Future<void> _showPromptEditor(BuildContext context, ChatController chatCtrl) async {
+  Future<void> _showPromptEditor(
+    BuildContext context,
+    ChatController chatCtrl,
+  ) async {
     final result = await Get.to<String?>(
       () => _PromptEditorPage(initialText: chatCtrl.systemPrompt.value),
     );
@@ -585,8 +664,13 @@ class _SettingsBody extends StatelessWidget {
     }
   }
 
-  Future<void> _showPortEditor(BuildContext context, LocalApiServerService apiServer) async {
-    final controller = TextEditingController(text: apiServer.port.value.toString());
+  Future<void> _showPortEditor(
+    BuildContext context,
+    LocalApiServerService apiServer,
+  ) async {
+    final controller = TextEditingController(
+      text: apiServer.port.value.toString(),
+    );
     final result = await showDialog<String?>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -634,17 +718,15 @@ class _SettingsBody extends StatelessWidget {
     await WidgetsBinding.instance.endOfFrame;
     final parsed = int.tryParse(result);
     if (parsed == null || parsed < 1024 || parsed > 65535) {
-      Get.snackbar(
-        'Invalid Port',
-        'Choose a port from 1024 to 65535.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
       return;
     }
     await apiServer.setPort(parsed);
   }
 
-  Future<void> _showHardwareSheet(BuildContext context, ChatStorageService storage) async {
+  Future<void> _showHardwareSheet(
+    BuildContext context,
+    ChatStorageService storage,
+  ) async {
     await Get.bottomSheet(
       SafeArea(
         child: Container(
@@ -663,7 +745,10 @@ class _SettingsBody extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDeleteAllChats(BuildContext context, ChatController chatCtrl) async {
+  Future<void> _confirmDeleteAllChats(
+    BuildContext context,
+    ChatController chatCtrl,
+  ) async {
     final confirmed = await Get.dialog<bool?>(
       AlertDialog(
         backgroundColor: context.bgPanel,
@@ -681,7 +766,10 @@ class _SettingsBody extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Get.back(result: true),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
-            child: const Text('Delete All', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Delete All',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -691,7 +779,6 @@ class _SettingsBody extends StatelessWidget {
       await Get.find<ChatStorageService>().deleteAllChats();
       chatCtrl.chats.clear();
       chatCtrl.activeChatId.value = null;
-      Get.snackbar('Done', 'All chats deleted.', snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -706,7 +793,10 @@ class _SettingsBody extends StatelessWidget {
       AlertDialog(
         backgroundColor: context.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Reinstall the App?', style: TextStyle(color: context.text)),
+        title: Text(
+          'Reinstall the App?',
+          style: TextStyle(color: context.text),
+        ),
         content: Text(
           'This resets chats, prompts, API settings, hardware settings, theme, and temporary cache to defaults.',
           style: TextStyle(color: context.textM),
@@ -740,12 +830,6 @@ class _SettingsBody extends StatelessWidget {
     storage.gpuLayers = 0;
     storage.lastModelId = '';
     await apiServer.resetToDefaults();
-
-    Get.snackbar(
-      'Reset Complete',
-      'The app has been returned to its default local state.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
 
   List<Widget> _interleave(List<Widget> items, Widget separator) {
@@ -758,6 +842,124 @@ class _SettingsBody extends StatelessWidget {
     return result;
   }
 
+  void _showUpdateDialog(BuildContext context, UpdateController updateCtrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.bgPanel,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Update Available',
+          style: TextStyle(color: dialogContext.text),
+        ),
+        content: Obx(() {
+          if (updateCtrl.isDownloading.value) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Downloading update...',
+                  style: TextStyle(color: dialogContext.textM),
+                ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: updateCtrl.downloadProgress.value,
+                  backgroundColor: dialogContext.border,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    dialogContext.accent,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${(updateCtrl.downloadProgress.value * 100).toStringAsFixed(1)}%',
+                  style: TextStyle(color: dialogContext.textD, fontSize: 12),
+                ),
+              ],
+            );
+          }
+          if (updateCtrl.downloadedFilePath.value.isNotEmpty) {
+            return Text(
+              'Download complete! Ready to install.',
+              style: TextStyle(color: dialogContext.textM),
+            );
+          }
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Version ${updateCtrl.latestVersion.value} is available.',
+                  style: TextStyle(
+                    color: dialogContext.textM,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  updateCtrl.latestReleaseNotes.value,
+                  style: TextStyle(color: dialogContext.textD, fontSize: 13),
+                ),
+              ],
+            ),
+          );
+        }),
+        actions: [
+          Obx(() {
+            if (updateCtrl.isDownloading.value) {
+              return const SizedBox.shrink();
+            }
+            return TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                updateCtrl.downloadedFilePath.value = ''; // Reset on cancel
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: dialogContext.textD),
+              ),
+            );
+          }),
+          Obx(() {
+            if (updateCtrl.isDownloading.value) {
+              return const SizedBox.shrink();
+            }
+            if (updateCtrl.downloadedFilePath.value.isNotEmpty) {
+              return ElevatedButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  updateCtrl.installUpdate();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.green,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Install',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }
+            final isDark =
+                ThemeData.estimateBrightnessForColor(context.accent) ==
+                Brightness.dark;
+            final textColor = isDark ? Colors.white : Colors.black;
+            return ElevatedButton(
+              onPressed: () => updateCtrl.downloadUpdate(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.accent,
+                foregroundColor: textColor,
+                elevation: 0,
+              ),
+              child: Text('Download', style: TextStyle(color: textColor)),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 }
 
 class _PromptEditorPage extends StatefulWidget {
@@ -849,7 +1051,9 @@ class _PromptEditorPageState extends State<_PromptEditorPage> {
                       onPressed: () => Navigator.of(context).pop(''),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.red,
-                        side: BorderSide(color: AppColors.red.withValues(alpha: 0.6)),
+                        side: BorderSide(
+                          color: AppColors.red.withValues(alpha: 0.6),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('Clear'),
@@ -860,15 +1064,27 @@ class _PromptEditorPageState extends State<_PromptEditorPage> {
                     child: ElevatedButton(
                       onPressed: _changed ? _save : null,
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.resolveWith((states) {
-                          if (states.contains(WidgetState.disabled)) return context.borderFaint;
+                        backgroundColor: WidgetStateProperty.resolveWith((
+                          states,
+                        ) {
+                          if (states.contains(WidgetState.disabled))
+                            return context.borderFaint;
                           return context.accent;
                         }),
-                        foregroundColor: WidgetStateProperty.resolveWith((states) {
-                          final bg = states.contains(WidgetState.disabled) ? context.borderFaint : context.accent;
-                          return ThemeData.estimateBrightnessForColor(bg) == Brightness.dark ? Colors.white : Colors.black;
+                        foregroundColor: WidgetStateProperty.resolveWith((
+                          states,
+                        ) {
+                          final bg = states.contains(WidgetState.disabled)
+                              ? context.borderFaint
+                              : context.accent;
+                          return ThemeData.estimateBrightnessForColor(bg) ==
+                                  Brightness.dark
+                              ? Colors.white
+                              : Colors.black;
                         }),
-                        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 14)),
+                        padding: WidgetStateProperty.all(
+                          const EdgeInsets.symmetric(vertical: 14),
+                        ),
                         elevation: WidgetStateProperty.all(0),
                       ),
                       child: const Text('Save'),
@@ -902,12 +1118,16 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
   static Map<String, dynamic> _detectBestConfig() {
     if (!Platform.isAndroid && !Platform.isIOS) {
       // Desktop: CPU is safest, Vulkan if available
-      return {'backend': 'cpu', 'gpuLayers': 0, 'reason': 'CPU mode — most compatible on desktop'};
+      return {
+        'backend': 'cpu',
+        'gpuLayers': 0,
+        'reason': 'CPU mode — most compatible on desktop',
+      };
     }
 
     // Android/iOS: detect available RAM and processor count
     final cores = Platform.numberOfProcessors;
-    
+
     if (cores >= 8) {
       // High-end device (e.g. Snapdragon 8 Gen 2+, Dimensity 9000+)
       return {
@@ -947,12 +1167,6 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
     });
     widget.storage.backendType = _backend;
     widget.storage.gpuLayers = _gpuLayers.toInt();
-    Get.snackbar(
-      'Auto Config Applied',
-      config['reason'] as String,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
   }
 
   void _saveBackend(String val) {
@@ -1000,7 +1214,11 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
           // ── Recommended Auto Config ──
           Text(
             'Compute Device',
-            style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: context.text,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1019,11 +1237,7 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _applyAutoConfig,
-                icon: Icon(
-                  Icons.tune_rounded,
-                  size: 16,
-                  color: context.text,
-                ),
+                icon: Icon(Icons.tune_rounded, size: 16, color: context.text),
                 label: const Text('Apply Recommended Settings'),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: context.bgInput,
@@ -1047,7 +1261,11 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline_rounded, size: 14, color: context.accent),
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 14,
+                  color: context.accent,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1108,14 +1326,20 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
                   style: TextStyle(color: context.text, fontSize: 14),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: context.bgInput,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     _gpuLayers.toInt().toString(),
-                    style: TextStyle(color: context.text, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: context.text,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -1154,10 +1378,14 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? context.accent.withValues(alpha: 0.18) : context.bgPanel,
+            color: selected
+                ? context.accent.withValues(alpha: 0.18)
+                : context.bgPanel,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: selected ? context.accent.withValues(alpha: 0.55) : context.border,
+              color: selected
+                  ? context.accent.withValues(alpha: 0.55)
+                  : context.border,
             ),
           ),
           child: Center(
@@ -1176,4 +1404,3 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
     );
   }
 }
-

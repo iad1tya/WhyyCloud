@@ -30,6 +30,7 @@ class LocalApiServerService extends GetxService {
     }
     return 'http://$defaultHost:${port.value}/v1';
   }
+
   bool get isBusy => _llm.isGenerating.value;
   bool get hasLoadedModel => _llm.isLoaded.value;
   String get modelId => _llm.publicModelId;
@@ -58,11 +59,7 @@ class LocalApiServerService extends GetxService {
           ? InternetAddress.anyIPv4
           : InternetAddress.loopbackIPv4;
 
-      _server = await HttpServer.bind(
-        bindAddress,
-        nextPort,
-        shared: false,
-      );
+      _server = await HttpServer.bind(bindAddress, nextPort, shared: false);
       port.value = nextPort;
       _storage.localApiServerPort = nextPort;
       _storage.localApiServerEnabled = true;
@@ -82,7 +79,7 @@ class LocalApiServerService extends GetxService {
       _server = null;
       isRunning.value = false;
       errorMessage.value = e.toString();
-      // Do not rethrow here, so that app initialization can continue 
+      // Do not rethrow here, so that app initialization can continue
       // even if the local API server fails to bind.
     } finally {
       isStarting.value = false;
@@ -232,7 +229,7 @@ class LocalApiServerService extends GetxService {
 
   Future<void> _handleChatCompletions(HttpRequest request) async {
     if (!hasLoadedModel) {
-        await _writeError(
+      await _writeError(
         request.response,
         HttpStatus.serviceUnavailable,
         'No model loaded. Load a model in Whyy Cloud first.',

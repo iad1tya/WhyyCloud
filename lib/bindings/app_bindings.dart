@@ -9,6 +9,7 @@ import '../services/log_service.dart';
 import '../controllers/chat_controller.dart';
 import '../controllers/model_controller.dart';
 import '../controllers/theme_controller.dart';
+import '../controllers/update_controller.dart';
 
 /// Initial bindings — registers all services and controllers with GetX DI.
 class AppBindings extends Bindings {
@@ -28,5 +29,6 @@ class AppBindings extends Bindings {
     ); // Put instead of lazyPut since we need theme immediately
     Get.lazyPut(() => ChatController(), fenix: true);
     Get.lazyPut(() => ModelController(), fenix: true);
+    Get.lazyPut(() => UpdateController(), fenix: true);
   }
 }

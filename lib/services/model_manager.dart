@@ -18,8 +18,9 @@ class ModelManager extends GetxService {
       'https://raw.githubusercontent.com/iad1tya/WhyyCloud/refs/heads/main/assets/models_catalog.json';
 
   final catalog = <AiModelInfo>[].obs;
-  final downloadedModels = <String>[].obs; // filenames on-disk (list for reactivity)
-  
+  final downloadedModels =
+      <String>[].obs; // filenames on-disk (list for reactivity)
+
   // ── Download tracking (single reactive object) ─────────────
   final activeDownloads = <String, DownloadState>{}.obs;
   final tick = 0.obs; // force UI refresh counter
@@ -40,7 +41,11 @@ class ModelManager extends GetxService {
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       try {
         final execDir = Platform.resolvedExecutable;
-        final usbShared = p.join(p.dirname(p.dirname(execDir)), 'Shared', 'models');
+        final usbShared = p.join(
+          p.dirname(p.dirname(execDir)),
+          'Shared',
+          'models',
+        );
         if (await Directory(usbShared).exists()) {
           return usbShared;
         }
@@ -76,7 +81,9 @@ class ModelManager extends GetxService {
       }
     } catch (e) {
       try {
-        final jsonStr = await rootBundle.loadString('assets/models_catalog.json');
+        final jsonStr = await rootBundle.loadString(
+          'assets/models_catalog.json',
+        );
         _applyCatalogJson(jsonStr);
       } catch (_) {
         // Catalog couldn't load — will be empty
@@ -86,9 +93,12 @@ class ModelManager extends GetxService {
     // Load persisted custom models
     try {
       final box = Hive.box('models_meta');
-      final customList = box.get('custom_models', defaultValue: <dynamic>[]) as List;
+      final customList =
+          box.get('custom_models', defaultValue: <dynamic>[]) as List;
       for (final raw in customList) {
-        final model = AiModelInfo.fromJson(Map<String, dynamic>.from(raw as Map));
+        final model = AiModelInfo.fromJson(
+          Map<String, dynamic>.from(raw as Map),
+        );
         // Don't add duplicates
         if (!catalog.any((m) => m.id == model.id)) {
           catalog.add(model);
@@ -99,8 +109,9 @@ class ModelManager extends GetxService {
 
   void _applyCatalogJson(String jsonStr) {
     final list = jsonDecode(jsonStr) as List;
-    catalog.value =
-        list.map((j) => AiModelInfo.fromJson(j as Map<String, dynamic>)).toList();
+    catalog.value = list
+        .map((j) => AiModelInfo.fromJson(j as Map<String, dynamic>))
+        .toList();
   }
 
   /// Scan the models directory for downloaded .gguf files.
@@ -118,8 +129,10 @@ class ModelManager extends GetxService {
   }
 
   String getModelPath(AiModelInfo model) => p.join(_modelsDir, model.filename);
-  String getModelPathByFilename(String filename) => p.join(_modelsDir, filename);
-  bool isModelDownloaded(AiModelInfo model) => downloadedModels.contains(model.filename);
+  String getModelPathByFilename(String filename) =>
+      p.join(_modelsDir, filename);
+  bool isModelDownloaded(AiModelInfo model) =>
+      downloadedModels.contains(model.filename);
 
   /// Is this model currently downloading?
   bool isDownloading(String filename) {
@@ -177,7 +190,8 @@ class ModelManager extends GetxService {
       state.receivedBytes = existingBytes.toDouble();
 
       final sink = partFile.openWrite(
-          mode: existingBytes > 0 ? FileMode.append : FileMode.write);
+        mode: existingBytes > 0 ? FileMode.append : FileMode.write,
+      );
 
       int receivedBytes = existingBytes;
       final stopwatch = Stopwatch()..start();
@@ -194,7 +208,8 @@ class ModelManager extends GetxService {
 
         // Calculate speed every 500ms
         if (stopwatch.elapsedMilliseconds - lastSpeedCheck > 500) {
-          final elapsed = (stopwatch.elapsedMilliseconds - lastSpeedCheck) / 1000;
+          final elapsed =
+              (stopwatch.elapsedMilliseconds - lastSpeedCheck) / 1000;
           final bytesDelta = receivedBytes - lastSpeedBytes;
           state.speedBytesPerSec = bytesDelta / elapsed;
           lastSpeedCheck = stopwatch.elapsedMilliseconds;
@@ -204,7 +219,8 @@ class ModelManager extends GetxService {
           // Update foreground notification with progress
           if (wakelockService != null && state.totalBytes > 0) {
             final progress = state.receivedBytes / state.totalBytes;
-            final speedMb = (state.speedBytesPerSec / (1024 * 1024)).toStringAsFixed(1);
+            final speedMb = (state.speedBytesPerSec / (1024 * 1024))
+                .toStringAsFixed(1);
             wakelockService.updateDownloadProgress(
               modelName: model.name,
               progress: progress,
@@ -299,7 +315,7 @@ class ModelManager extends GetxService {
   }) async {
     final destPath = p.join(_modelsDir, filename);
     final destFile = File(destPath);
-    
+
     final sink = destFile.openWrite();
     int copiedBytes = 0;
     bool wasCancelled = false;
@@ -340,14 +356,18 @@ class ModelManager extends GetxService {
   }
 
   /// Import a model file from external path with progress tracking.
-  Future<void> importModel(String sourcePath, {Function(double)? onProgress, bool Function()? checkCancelled}) async {
+  Future<void> importModel(
+    String sourcePath, {
+    Function(double)? onProgress,
+    bool Function()? checkCancelled,
+  }) async {
     final filename = p.basename(sourcePath);
     final destPath = p.join(_modelsDir, filename);
 
     if (sourcePath != destPath) {
       final sourceFile = File(sourcePath);
       final destFile = File(destPath);
-      
+
       final totalBytes = await sourceFile.length();
       if (totalBytes == 0) return;
 

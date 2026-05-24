@@ -43,7 +43,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.accentDark),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
         hintStyle: const TextStyle(color: AppColors.darkTextD, fontSize: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -100,7 +103,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.accentLight),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
         hintStyle: const TextStyle(color: AppColors.lightTextD, fontSize: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

@@ -42,7 +42,10 @@ class ChatSidebar extends StatelessWidget {
                   foregroundColor: context.text,
                   elevation: 0,
                   alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 13,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(color: context.border, width: 1),
@@ -61,7 +64,11 @@ class ChatSidebar extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.chat_bubble_outline, size: 36, color: context.textD),
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 36,
+                      color: context.textD,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'No chats yet',
@@ -83,15 +90,20 @@ class ChatSidebar extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Material(
                     color: isActive
-                      ? context.accent.withValues(alpha: context.isDark ? 0.12 : 0.08)
-                      : context.bgPanel,
+                        ? context.accent.withValues(
+                            alpha: context.isDark ? 0.12 : 0.08,
+                          )
+                        : context.bgPanel,
                     borderRadius: BorderRadius.circular(16),
                     child: InkWell(
                       onTap: () => onSelectChat(chat.id),
                       borderRadius: BorderRadius.circular(16),
                       hoverColor: context.bgHover,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         child: Row(
                           children: [
                             Icon(
@@ -105,8 +117,12 @@ class ChatSidebar extends StatelessWidget {
                                 chat.title,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                                  color: isActive ? context.text : context.textM,
+                                  fontWeight: isActive
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color: isActive
+                                      ? context.text
+                                      : context.textM,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -117,8 +133,16 @@ class ChatSidebar extends StatelessWidget {
                               width: 26,
                               height: 26,
                               child: IconButton(
-                                onPressed: () => _confirmDelete(context, chat.id, chat.title),
-                                icon: Icon(Icons.close_rounded, size: 14, color: context.textD),
+                                onPressed: () => _confirmDelete(
+                                  context,
+                                  chat.id,
+                                  chat.title,
+                                ),
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: context.textD,
+                                ),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
@@ -158,7 +182,11 @@ class ChatSidebar extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, String chatId, String chatTitle) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    String chatId,
+    String chatTitle,
+  ) async {
     final confirmed = await showDialog<bool?>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -186,7 +214,9 @@ class ChatSidebar extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.red,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),

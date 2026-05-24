@@ -11,7 +11,8 @@ class ThemeController extends GetxController {
 
   bool get isDarkMode => _isDarkMode.value;
 
-  ThemeMode get themeMode => _isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode =>
+      _isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
 
   @override
   void onInit() {

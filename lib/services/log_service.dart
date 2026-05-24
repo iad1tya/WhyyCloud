@@ -14,7 +14,8 @@ class LogEntry {
   });
 
   String get formatted {
-    final t = '${timestamp.hour.toString().padLeft(2, '0')}:'
+    final t =
+        '${timestamp.hour.toString().padLeft(2, '0')}:'
         '${timestamp.minute.toString().padLeft(2, '0')}:'
         '${timestamp.second.toString().padLeft(2, '0')}';
     final src = source != null ? ' ($source)' : '';
@@ -31,22 +32,22 @@ class LogService extends GetxService {
     return this;
   }
 
-  void info(String message, {String? source}) =>
-      _add('INFO', message, source);
+  void info(String message, {String? source}) => _add('INFO', message, source);
 
-  void warn(String message, {String? source}) =>
-      _add('WARN', message, source);
+  void warn(String message, {String? source}) => _add('WARN', message, source);
 
   void error(String message, {String? source}) =>
       _add('ERROR', message, source);
 
   void _add(String level, String message, String? source) {
-    logs.add(LogEntry(
-      timestamp: DateTime.now(),
-      level: level,
-      message: message,
-      source: source,
-    ));
+    logs.add(
+      LogEntry(
+        timestamp: DateTime.now(),
+        level: level,
+        message: message,
+        source: source,
+      ),
+    );
     // Keep within limit
     while (logs.length > maxLogs) {
       logs.removeAt(0);

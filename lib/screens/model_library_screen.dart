@@ -12,12 +12,19 @@ class ModelLibraryScreen extends StatelessWidget {
   final bool embedded;
   final VoidCallback? onOpenDrawer;
 
-  const ModelLibraryScreen({super.key, this.embedded = false, this.onOpenDrawer});
+  const ModelLibraryScreen({
+    super.key,
+    this.embedded = false,
+    this.onOpenDrawer,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (embedded) {
-      return _ModelLibraryBody(showBackButton: false, onOpenDrawer: onOpenDrawer);
+      return _ModelLibraryBody(
+        showBackButton: false,
+        onOpenDrawer: onOpenDrawer,
+      );
     }
     return Scaffold(
       backgroundColor: context.bg,
@@ -72,7 +79,9 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
         Padding(
           padding: EdgeInsets.fromLTRB(
             12,
-            widget.showBackButton ? MediaQuery.of(context).padding.top + 12 : 12,
+            widget.showBackButton
+                ? MediaQuery.of(context).padding.top + 12
+                : 12,
             12,
             4,
           ),
@@ -92,17 +101,25 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
                   alignment: Alignment.centerLeft,
                   child: widget.showBackButton
                       ? IconButton(
-                          icon: Icon(Icons.arrow_back_rounded, size: 22, color: context.text),
+                          icon: Icon(
+                            Icons.arrow_back_rounded,
+                            size: 22,
+                            color: context.text,
+                          ),
                           onPressed: () => Get.back(),
                         )
                       : IconButton(
-                          icon: Icon(Icons.menu_rounded, size: 22, color: context.textM),
-                          onPressed: widget.onOpenDrawer ?? () => Scaffold.of(context).openDrawer(),
+                          icon: Icon(
+                            Icons.menu_rounded,
+                            size: 22,
+                            color: context.textM,
+                          ),
+                          onPressed:
+                              widget.onOpenDrawer ??
+                              () => Scaffold.of(context).openDrawer(),
                         ),
                 ),
-                const Center(
-                  child: _HeaderTitle(label: 'Models'),
-                ),
+                const Center(child: _HeaderTitle(label: 'Models')),
                 Align(
                   alignment: Alignment.centerRight,
                   child: _ImportButton(ctrl: ctrl),
@@ -291,9 +308,10 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
             fontSize: 12,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             color: selected
-                ? (ThemeData.estimateBrightnessForColor(context.accent) == Brightness.dark
-                    ? Colors.white
-                    : Colors.black)
+                ? (ThemeData.estimateBrightnessForColor(context.accent) ==
+                          Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
                 : context.textM,
           ),
         ),
@@ -301,7 +319,9 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
         onSelected: (_) => setState(() => _filter = filter),
         selectedColor: context.accent,
         backgroundColor: context.bgInput,
-        side: BorderSide(color: selected ? context.accent : context.borderFaint),
+        side: BorderSide(
+          color: selected ? context.accent : context.borderFaint,
+        ),
         showCheckmark: false,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -379,7 +399,10 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: dialogContext.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete Model File', style: TextStyle(color: dialogContext.text)),
+        title: Text(
+          'Delete Model File',
+          style: TextStyle(color: dialogContext.text),
+        ),
         content: Text(
           'Delete ${model.name}? (${model.sizeGb} GB will be freed)',
           style: TextStyle(color: dialogContext.textM),
@@ -445,11 +468,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
     if (confirmed == true) {
       await Future<void>.delayed(const Duration(milliseconds: 16));
       ctrl.deleteCustomModel(model);
-      Get.snackbar(
-        'Removed',
-        '${model.name} removed from library.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
     }
   }
 }
@@ -475,7 +493,9 @@ class _ImportButton extends StatelessWidget {
               Icon(
                 Icons.add_rounded,
                 size: 15,
-                color: ThemeData.estimateBrightnessForColor(context.accent) == Brightness.dark
+                color:
+                    ThemeData.estimateBrightnessForColor(context.accent) ==
+                        Brightness.dark
                     ? Colors.white
                     : Colors.black,
               ),
@@ -485,7 +505,9 @@ class _ImportButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: ThemeData.estimateBrightnessForColor(context.accent) == Brightness.dark
+                  color:
+                      ThemeData.estimateBrightnessForColor(context.accent) ==
+                          Brightness.dark
                       ? Colors.white
                       : Colors.black,
                 ),
@@ -606,7 +628,11 @@ class _ImportButton extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: context.textD, size: 20),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: context.textD,
+                  size: 20,
+                ),
               ],
             ),
           ),
@@ -638,7 +664,9 @@ class _ImportButton extends StatelessWidget {
                 labelText: 'Model Name',
                 labelStyle: TextStyle(color: dialogContext.textD, fontSize: 13),
                 hintText: 'e.g. Mistral 7B Uncensored',
-                hintStyle: TextStyle(color: dialogContext.textD.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                  color: dialogContext.textD.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: dialogContext.bgInput,
                 border: OutlineInputBorder(
@@ -664,7 +692,9 @@ class _ImportButton extends StatelessWidget {
                 labelText: 'Download URL',
                 labelStyle: TextStyle(color: dialogContext.textD, fontSize: 13),
                 hintText: 'https://huggingface.co/.../model.gguf',
-                hintStyle: TextStyle(color: dialogContext.textD.withValues(alpha: 0.5)),
+                hintStyle: TextStyle(
+                  color: dialogContext.textD.withValues(alpha: 0.5),
+                ),
                 filled: true,
                 fillColor: dialogContext.bgInput,
                 border: OutlineInputBorder(
@@ -717,19 +747,9 @@ class _ImportButton extends StatelessWidget {
     final name = result['name'] ?? '';
     final url = result['url'] ?? '';
     if (name.isEmpty || url.isEmpty) {
-      Get.snackbar(
-        'Missing Info',
-        'Please enter both name and URL.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
       return;
     }
     if (!url.startsWith('http')) {
-      Get.snackbar(
-        'Invalid URL',
-        'URL must start with http:// or https://',
-        snackPosition: SnackPosition.BOTTOM,
-      );
       return;
     }
 

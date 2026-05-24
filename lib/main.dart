@@ -17,48 +17,51 @@ import 'routes/app_routes.dart';
 
 Future<void> main() async {
   // Wrap entire app in error zone to catch native/async crashes
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    // Catch Flutter framework errors (rendering, layout, etc.)
-    FlutterError.onError = (details) {
-      FlutterError.presentError(details);
-      debugPrint('FlutterError: ${details.exception}');
-    };
+      // Catch Flutter framework errors (rendering, layout, etc.)
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        debugPrint('FlutterError: ${details.exception}');
+      };
 
-    // Catch unhandled platform errors (native crashes, isolate errors)
-    PlatformDispatcher.instance.onError = (error, stack) {
-      debugPrint('PlatformError: $error\n$stack');
-      return true; // Prevent app from crashing
-    };
+      // Catch unhandled platform errors (native crashes, isolate errors)
+      PlatformDispatcher.instance.onError = (error, stack) {
+        debugPrint('PlatformError: $error\n$stack');
+        return true; // Prevent app from crashing
+      };
 
-    // Init Hive
-    final appDir = await getApplicationDocumentsDirectory();
-    await Hive.initFlutter(appDir.path);
+      // Init Hive
+      final appDir = await getApplicationDocumentsDirectory();
+      await Hive.initFlutter(appDir.path);
 
-    // Register Hive adapters
-    Hive.registerAdapter(ChatModelAdapter());
-    Hive.registerAdapter(MessageModelAdapter());
-    Hive.registerAdapter(MessageRoleAdapter());
+      // Register Hive adapters
+      Hive.registerAdapter(ChatModelAdapter());
+      Hive.registerAdapter(MessageModelAdapter());
+      Hive.registerAdapter(MessageRoleAdapter());
 
-    // Open Hive boxes
-    await Hive.openBox<ChatModel>('chats');
-    await Hive.openBox('settings');
-    await Hive.openBox('models_meta');
+      // Open Hive boxes
+      await Hive.openBox<ChatModel>('chats');
+      await Hive.openBox('settings');
+      await Hive.openBox('models_meta');
 
-    // Load theme preference
-    final themeController = Get.put(ThemeController());
+      // Load theme preference
+      final themeController = Get.put(ThemeController());
 
-    runApp(PortableAIApp(themeController: themeController));
-  }, (error, stack) {
-    // Last-resort error handler — prevents silent force-close
-    debugPrint('Unhandled error: $error\n$stack');
-  });
+      runApp(PortableAIApp(themeController: themeController));
+    },
+    (error, stack) {
+      // Last-resort error handler — prevents silent force-close
+      debugPrint('Unhandled error: $error\n$stack');
+    },
+  );
 }
 
 class PortableAIApp extends StatelessWidget {
   final ThemeController themeController;
-  
+
   const PortableAIApp({super.key, required this.themeController});
 
   @override

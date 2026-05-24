@@ -1,7 +1,7 @@
 name: portable_ai_flutter
 description: "Portable AI — Run uncensored local LLMs natively on any device."
 publish_to: 'none'
-version: 1.0.0+100
+version: 1.2.0+101
 
 environment:
   sdk: ^3.11.4
@@ -41,6 +41,9 @@ dependencies:
   wakelock_plus: ^1.2.10             # Keep screen on during downloads
   flutter_foreground_task: ^9.2.2    # Foreground service for downloads/inference
   disable_battery_optimization: ^1.1.1 # Guide users to disable battery optimization
+  package_info_plus: ^9.0.1
+  open_filex: ^4.7.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +67,7 @@ flutter:
   assets:
     - assets/models_catalog.json
     - assets/WhyyCloud.png
+    - assets/playstore-icon.png
 
 flutter_icons:
   android: true

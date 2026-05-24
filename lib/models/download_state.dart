@@ -18,7 +18,8 @@ class DownloadState {
     this.isCancelled = false,
   }) : startedAt = startedAt ?? DateTime.now();
 
-  double get progress => totalBytes > 0 ? (receivedBytes / totalBytes).clamp(0.0, 1.0) : 0.0;
+  double get progress =>
+      totalBytes > 0 ? (receivedBytes / totalBytes).clamp(0.0, 1.0) : 0.0;
   double get percent => progress * 100;
 
   String get downloadedStr => _formatBytes(receivedBytes);

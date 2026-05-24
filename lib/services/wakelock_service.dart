@@ -33,7 +33,7 @@ class WakelockService extends GetxService {
           allowWifiLock: true,
         ),
       );
-      
+
       // Request notification permission for Android 13+
       await FlutterForegroundTask.requestNotificationPermission();
     }

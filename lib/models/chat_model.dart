@@ -34,9 +34,9 @@ class ChatModel extends HiveObject {
     List<MessageModel>? messages,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : messages = messages ?? [],
-        createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : messages = messages ?? [],
+       createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   /// Auto-generate title from first user message.
   void autoTitle() {

@@ -61,7 +61,9 @@ class LlmService extends GetxService {
   /// Load a GGUF model from [path] with progress tracking.
   Future<void> loadModel(String path) async {
     LogService? log;
-    try { log = Get.find<LogService>(); } catch (_) {}
+    try {
+      log = Get.find<LogService>();
+    } catch (_) {}
 
     // Verify file exists first
     final file = File(path);
@@ -77,7 +79,9 @@ class LlmService extends GetxService {
     try {
       final magic = await header.read(4);
       if (magic.length < 4 || String.fromCharCodes(magic) != 'GGUF') {
-        throw Exception('Model file is not a valid GGUF file. Please re-download the model.');
+        throw Exception(
+          'Model file is not a valid GGUF file. Please re-download the model.',
+        );
       }
     } finally {
       await header.close();
@@ -182,13 +186,16 @@ class LlmService extends GetxService {
       // Optimize threads: 4 for both generation and batch processing to keep memory stable.
       final params = ModelParams(
         contextSize: contextSize,
-        gpuLayers: userGpuLayers, 
+        gpuLayers: userGpuLayers,
         preferredBackend: parsedBackend,
-        numberOfThreads: Platform.numberOfProcessors > 4 ? 4 : 0, 
+        numberOfThreads: Platform.numberOfProcessors > 4 ? 4 : 0,
         numberOfThreadsBatch: Platform.numberOfProcessors > 4 ? 4 : 0,
       );
 
-      log?.info('Backend=$parsedBackend, GPU layers=$userGpuLayers, ctx=$contextSize, threads=${Platform.numberOfProcessors > 4 ? 4 : 0}', source: 'LLM');
+      log?.info(
+        'Backend=$parsedBackend, GPU layers=$userGpuLayers, ctx=$contextSize, threads=${Platform.numberOfProcessors > 4 ? 4 : 0}',
+        source: 'LLM',
+      );
 
       await _engine!.loadModel(path, modelParams: params);
       progressTimer.cancel();

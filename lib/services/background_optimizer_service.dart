@@ -25,7 +25,8 @@ class BackgroundOptimizerService {
       if (isDisabled == true) return; // Already good
 
       // Check if we've already prompted the user
-      final alreadyPrompted = box.get(_promptedKey, defaultValue: false) as bool;
+      final alreadyPrompted =
+          box.get(_promptedKey, defaultValue: false) as bool;
       if (alreadyPrompted) return; // Don't nag
 
       // Mark as prompted
@@ -58,35 +59,57 @@ class BackgroundOptimizerService {
               children: [
                 Text(
                   'This app needs to run in the background to:',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: theme.textTheme.bodyLarge?.color),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                const _BulletPoint('Continue model downloads when the screen is off'),
+                const _BulletPoint(
+                  'Continue model downloads when the screen is off',
+                ),
                 const SizedBox(height: 6),
-                const _BulletPoint('Keep AI inference running without interruption'),
+                const _BulletPoint(
+                  'Keep AI inference running without interruption',
+                ),
                 const SizedBox(height: 6),
                 const _BulletPoint('Serve the local API to other apps'),
                 const SizedBox(height: 16),
                 Text(
                   'Please disable battery optimization for this app on the next screen.',
-                  style: TextStyle(fontSize: 13, color: theme.textTheme.bodySmall?.color),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: theme.textTheme.bodySmall?.color,
+                  ),
                 ),
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: Text('Later', style: TextStyle(color: theme.textTheme.bodyLarge?.color)),
+                child: Text(
+                  'Later',
+                  style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                ),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: const Text('Open Settings', style: TextStyle(color: Colors.black)),
+                child: const Text(
+                  'Open Settings',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
             ],
           );
@@ -94,8 +117,7 @@ class BackgroundOptimizerService {
       );
 
       if (shouldOpen == true) {
-        await DisableBatteryOptimization
-            .showDisableBatteryOptimizationSettings();
+        await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
       }
     } catch (e) {
       debugPrint('BackgroundOptimizerService error: $e');
@@ -107,8 +129,7 @@ class BackgroundOptimizerService {
   static Future<void> openBatterySettings() async {
     if (!Platform.isAndroid) return;
     try {
-      await DisableBatteryOptimization
-          .showDisableBatteryOptimizationSettings();
+      await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
     } catch (e) {
       debugPrint('BackgroundOptimizerService.openBatterySettings error: $e');
     }
@@ -118,8 +139,7 @@ class BackgroundOptimizerService {
   static Future<bool> isOptimizationDisabled() async {
     if (!Platform.isAndroid) return true;
     try {
-      return await DisableBatteryOptimization
-              .isBatteryOptimizationDisabled ??
+      return await DisableBatteryOptimization.isBatteryOptimizationDisabled ??
           false;
     } catch (_) {
       return false;
@@ -138,11 +158,13 @@ class _BulletPoint extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(top: 6, right: 8),
-          child: Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
+          child: Icon(
+            Icons.check_circle_outline,
+            size: 16,
+            color: Colors.green,
+          ),
         ),
-        Expanded(
-          child: Text(text, style: const TextStyle(fontSize: 13)),
-        ),
+        Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
       ],
     );
   }

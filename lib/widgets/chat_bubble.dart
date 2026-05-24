@@ -11,6 +11,7 @@ import '../services/llm_service.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
+
   /// If true, this is the last AI message and we show speed info
   final bool showSpeed;
 
@@ -30,27 +31,38 @@ class ChatBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Avatar
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: isUser ? context.accent : context.accent.withValues(alpha: 0.95),
-              shape: BoxShape.circle,
+          if (isUser)
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: context.accent,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person_rounded,
+                size: 18,
+                color:
+                    ThemeData.estimateBrightnessForColor(context.accent) ==
+                        Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            )
+          else
+            ClipRRect(
+              borderRadius: BorderRadius.circular(17),
+              child: Image.asset(
+                'assets/playstore-icon.png',
+                width: 34,
+                height: 34,
+                fit: BoxFit.cover,
+              ),
             ),
-            child: Icon(
-              isUser ? Icons.person_rounded : Icons.bolt_rounded,
-              size: 18,
-              color: ThemeData.estimateBrightnessForColor(isUser ? context.accent : context.accent) == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-          ),
           const SizedBox(width: 14),
 
           // Content
-          Expanded(
-            child: _buildContent(context, isUser),
-          ),
+          Expanded(child: _buildContent(context, isUser)),
         ],
       ),
     );
@@ -91,16 +103,28 @@ class ChatBubble extends StatelessWidget {
             selectable: true,
             styleSheet: MarkdownStyleSheet(
               p: TextStyle(fontSize: 15, color: context.text, height: 1.7),
-              h1: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: context.text),
-              h2: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: context.text),
-              h3: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.text),
+              h1: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: context.text,
+              ),
+              h2: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: context.text,
+              ),
+              h3: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: context.text,
+              ),
               code: TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 13,
                 color: const Color(0xFFE6EDF3),
                 backgroundColor: context.isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.06),
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.06),
               ),
               codeblockDecoration: BoxDecoration(
                 color: const Color(0xFF1E1E2E),
@@ -113,12 +137,22 @@ class ChatBubble extends StatelessWidget {
                   left: BorderSide(color: context.accent, width: 3),
                 ),
               ),
-              blockquotePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              blockquotePadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
               listBullet: TextStyle(color: context.text),
-              tableHead: TextStyle(fontWeight: FontWeight.w600, color: context.text, fontSize: 14),
+              tableHead: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: context.text,
+                fontSize: 14,
+              ),
               tableBody: TextStyle(color: context.text, fontSize: 14),
               tableBorder: TableBorder.all(color: context.border),
-              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              tableCellsPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
               horizontalRuleDecoration: BoxDecoration(
                 border: Border(top: BorderSide(color: context.border)),
               ),
@@ -136,23 +170,26 @@ class ChatBubble extends StatelessWidget {
                 InkWell(
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: message.content));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Copied to clipboard'),
-                        duration: Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.copy_rounded, size: 14, color: context.textD),
+                        Icon(
+                          Icons.copy_rounded,
+                          size: 14,
+                          color: context.textD,
+                        ),
                         const SizedBox(width: 4),
-                        Text('Copy', style: TextStyle(fontSize: 12, color: context.textD)),
+                        Text(
+                          'Copy',
+                          style: TextStyle(fontSize: 12, color: context.textD),
+                        ),
                       ],
                     ),
                   ),
@@ -170,7 +207,11 @@ class ChatBubble extends StatelessWidget {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.speed_rounded, size: 14, color: context.textD),
+                        Icon(
+                          Icons.speed_rounded,
+                          size: 14,
+                          color: context.textD,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${speed.toStringAsFixed(1)} t/s',
@@ -188,7 +229,8 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildAttachmentPreview(BuildContext context) {
-    final isImage = message.hasImageAttachment &&
+    final isImage =
+        message.hasImageAttachment &&
         (message.imageMimeType?.startsWith('image/') ?? false);
 
     return Container(
@@ -220,7 +262,10 @@ class ChatBubble extends StatelessWidget {
                 color: context.accent.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.insert_drive_file_rounded, color: context.accent),
+              child: Icon(
+                Icons.insert_drive_file_rounded,
+                color: context.accent,
+              ),
             ),
           const SizedBox(width: 12),
           Expanded(
