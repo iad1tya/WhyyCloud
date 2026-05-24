@@ -142,6 +142,12 @@ class _SettingsBody extends StatelessWidget {
                   ),
                 ],
               ),
+              Obx(() => apiServer.isRunning.value
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: _localApiInfoCard(context, apiServer),
+                    )
+                  : const SizedBox.shrink()),
 
               const SizedBox(height: 14),
               _sectionTitle(context, 'System'),
@@ -456,6 +462,112 @@ class _SettingsBody extends StatelessWidget {
       default:
         return 'CPU Only';
     }
+  }
+
+  Widget _localApiInfoCard(BuildContext context, LocalApiServerService apiServer) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.bgPanel,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.borderFaint),
+      ),
+      child: Obx(() {
+        final external = apiServer.allInterfaces.value;
+        final loopbackRoot = 'http://127.0.0.1:${apiServer.port.value}';
+        final baseUrl = apiServer.baseUrl;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.dns_rounded, size: 18, color: context.accent),
+                const SizedBox(width: 8),
+                Text(
+                  'Local API Details',
+                  style: TextStyle(
+                    color: context.text,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.green.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Running',
+                    style: TextStyle(
+                      color: AppColors.green,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _infoRow(context, 'Server URL', loopbackRoot),
+            const SizedBox(height: 8),
+            _infoRow(context, 'API Base URL', baseUrl),
+            const SizedBox(height: 8),
+            _infoRow(context, 'Health check', 'GET $loopbackRoot/healthz'),
+            const SizedBox(height: 8),
+            _infoRow(context, 'Models endpoint', 'GET $baseUrl/models'),
+            const SizedBox(height: 8),
+            _infoRow(context, 'Chat endpoint', 'POST $baseUrl/chat/completions'),
+            const SizedBox(height: 8),
+            _infoRow(context, 'Binding', external ? 'All network interfaces' : 'Local device only'),
+            if (external) ...[
+              const SizedBox(height: 8),
+              _infoRow(
+                context,
+                'LAN access',
+                'Use http://<device-ip>:${apiServer.port.value}/v1 from another device',
+              ),
+            ],
+            const SizedBox(height: 10),
+            Text(
+              'Use these endpoints in apps that speak the OpenAI API format.',
+              style: TextStyle(color: context.textD, fontSize: 12, height: 1.4),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _infoRow(BuildContext context, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 96,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: context.textD,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: context.text,
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _showPromptEditor(BuildContext context, ChatController chatCtrl) async {
