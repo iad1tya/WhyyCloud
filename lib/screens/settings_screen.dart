@@ -47,115 +47,55 @@ class _SettingsBody extends StatelessWidget {
 
     return Column(
       children: [
-        // ── Top bar ──────────────────────────────────
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            12,
-            showBackButton ? MediaQuery.of(context).padding.top + 12 : 12,
-            12,
-            4,
-          ),
-          child: Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: context.bgPanel,
-              borderRadius: BorderRadius.circular(0),
-              border: Border(
-                bottom: BorderSide(color: context.borderFaint, width: 1),
-              ),
-            ),
-            child: Row(
-              children: [
-                if (showBackButton)
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_rounded, color: context.text),
-                    onPressed: () => Get.back(),
-                  )
-                else
-                  IconButton(
-                    icon: Icon(Icons.menu_rounded, color: context.text),
-                    onPressed: onOpenDrawer ?? () => Scaffold.of(context).openDrawer(),
-                  ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: context.text,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 48),
-              ],
-            ),
-          ),
-        ),
-
-        // ── Body ─────────────────────────────────────
+        _header(context),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(12, 6, 12, 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
             children: [
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'Appearance',
                 children: [
                   Obx(
-                    () => SwitchListTile(
-                      title: Text(
-                        'Dark Mode',
-                        style: TextStyle(color: context.text, fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        themeCtrl.isDarkMode
-                            ? 'Using dark theme'
-                            : 'Using light theme',
-                        style: TextStyle(color: context.textD, fontSize: 12),
-                      ),
-                      // secondary icon removed to keep list compact
+                    () => _materialSwitchTile(
+                      context,
+                      title: 'Dark Mode',
+                      subtitle: themeCtrl.isDarkMode
+                          ? 'Using dark theme'
+                          : 'Using light theme',
                       value: themeCtrl.isDarkMode,
-                      onChanged: (val) => themeCtrl.toggleTheme(),
                       activeThumbColor: context.accent,
-                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) => themeCtrl.toggleTheme(),
                     ),
                   ),
                 ],
               ),
 
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'AI Behavior',
                 children: [
                   Text(
                     'Global System Prompt',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: context.text,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     'Applied to all new chats. Existing chats keep their own prompt.',
-                    style: TextStyle(fontSize: 12, color: context.textD),
+                    style: TextStyle(fontSize: 13, color: context.textD, height: 1.35),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
                   Obx(
-                    () => TextField(
-                      controller:
-                          TextEditingController(text: chatCtrl.systemPrompt.value)
-                            ..selection = TextSelection.fromPosition(
-                              TextPosition(
-                                offset: chatCtrl.systemPrompt.value.length,
-                              ),
-                            ),
+                    () => TextFormField(
+                      key: ValueKey('system-prompt-${chatCtrl.systemPrompt.value.length}'),
+                      initialValue: chatCtrl.systemPrompt.value,
                       maxLines: 4,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         color: context.text,
                         height: 1.5,
                       ),
@@ -165,25 +105,26 @@ class _SettingsBody extends StatelessWidget {
                         filled: true,
                         fillColor: context.bgInput,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: context.border),
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: context.border),
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: context.accent),
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
                         ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
                       onChanged: (v) => chatCtrl.setGlobalSystemPrompt(v),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: OutlinedButton.icon(
+                    child: FilledButton.tonalIcon(
                       onPressed: () {
                         chatCtrl.clearGlobalSystemPrompt();
                         Get.snackbar(
@@ -195,14 +136,14 @@ class _SettingsBody extends StatelessWidget {
                       icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.red),
                       label: const Text(
                         'Clear Prompt',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                       ),
-                      style: OutlinedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         foregroundColor: AppColors.red,
-                        side: BorderSide(color: AppColors.red.withOpacity(0.22)),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        backgroundColor: AppColors.red.withValues(alpha: 0.14),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
@@ -210,70 +151,43 @@ class _SettingsBody extends StatelessWidget {
                 ],
               ),
 
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'Behavior',
                 children: [
-                  Text(
-                    'Temperature',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: context.text,
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      'Temperature',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: context.text,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Select one response style preset.',
+                      style: TextStyle(fontSize: 13, color: context.textD),
+                    ),
+                    trailing: Obx(
+                      () => Chip(
+                        label: Text(chatCtrl.temperature.value.toStringAsFixed(1)),
+                        padding: EdgeInsets.zero,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 6),
                   Obx(
                     () {
                       final temperature = chatCtrl.temperature.value.clamp(0.0, 2.0).toDouble();
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      return Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Slider(
-                                    value: temperature,
-                                    min: 0.0,
-                                    max: 2.0,
-                                    divisions: 20,
-                                    activeColor: context.accent,
-                                    inactiveColor: context.border,
-                                    label: temperature.toStringAsFixed(1),
-                                    onChanged: (v) => chatCtrl.updateTemperature(v),
-                                  ),
-                                ),
-                                Container(
-                                  width: 52,
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    temperature.toStringAsFixed(1),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: context.text,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 6,
-                              children: [
-                                _tempPresetChip(context, chatCtrl, 0.0, '0.0'),
-                                _tempPresetChip(context, chatCtrl, 0.7, '0.7 (Default)'),
-                                _tempPresetChip(context, chatCtrl, 1.0, '1.0'),
-                                _tempPresetChip(context, chatCtrl, 1.5, '1.5'),
-                                _tempPresetChip(context, chatCtrl, 2.0, '2.0'),
-                              ],
-                            ),
-                          ),
+                          _tempPresetChip(context, chatCtrl, 0.0, '0.0', temperature),
+                          _tempPresetChip(context, chatCtrl, 0.7, '0.7 Default', temperature),
+                          _tempPresetChip(context, chatCtrl, 1.0, '1.0', temperature),
+                          _tempPresetChip(context, chatCtrl, 1.5, '1.5', temperature),
+                          _tempPresetChip(context, chatCtrl, 2.0, '2.0', temperature),
                         ],
                       );
                     },
@@ -282,17 +196,15 @@ class _SettingsBody extends StatelessWidget {
               ),
 
               if (Platform.isAndroid) ...[
-                _SectionGroup(
+                _sectionGroup(
+                  context,
                   title: 'System',
-                  wrapInCard: false,
                   children: [
                     _menuTile(
                       context,
                       title: 'Battery Optimization',
                       subtitle: 'Disable to prevent background killing',
-                        leadingIcon: null,
-                      surface: Colors.transparent,
-                      borderColor: context.border,
+                      leadingIcon: null,
                       trailing: FutureBuilder<bool>(
                         future: BackgroundOptimizerService.isOptimizationDisabled(),
                         builder: (context, snapshot) {
@@ -313,18 +225,19 @@ class _SettingsBody extends StatelessWidget {
                 ),
               ],
 
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'Hardware',
                 children: [
-                  const SizedBox(height: 12),
                   _HardwareSettingsCard(storage: storage),
                 ],
               ),
 
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'Connectivity',
                 children: [
-                  _card(
+                  _surfaceCard(
                     context,
                     child: Obx(() {
                       final running = apiServer.isRunning.value;
@@ -347,24 +260,16 @@ class _SettingsBody extends StatelessWidget {
                           : context.textD;
 
                       return Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SwitchListTile(
-                              title: Text(
-                                'Local API server',
-                                style: TextStyle(color: context.text, fontSize: 14),
-                              ),
-                              subtitle: Text(
-                                'OpenAI base URL: ${apiServer.baseUrl}',
-                                style: TextStyle(
-                                  color: context.textD,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              // secondary icon removed to tighten layout
+                            _materialSwitchTile(
+                              context,
+                              title: 'Local API server',
+                              subtitle: 'OpenAI base URL: ${apiServer.baseUrl}',
                               value: running,
+                              activeThumbColor: context.accent,
                               onChanged: starting
                                   ? null
                                   : (enabled) async {
@@ -382,23 +287,14 @@ class _SettingsBody extends StatelessWidget {
                                         );
                                       }
                                     },
-                              activeThumbColor: context.accent,
-                              contentPadding: EdgeInsets.zero,
                             ),
-                            const SizedBox(height: 12),
-                            SwitchListTile(
-                              title: Text(
-                                'Allow External Connections',
-                                style: TextStyle(color: context.text, fontSize: 14),
-                              ),
-                              subtitle: Text(
-                                'Listen on 0.0.0.0 instead of localhost',
-                                style: TextStyle(
-                                  color: context.textD,
-                                  fontSize: 12,
-                                ),
-                              ),
+                            const SizedBox(height: 10),
+                            _materialSwitchTile(
+                              context,
+                              title: 'Allow External Connections',
+                              subtitle: 'Listen on 0.0.0.0 instead of localhost',
                               value: apiServer.allInterfaces.value,
+                              activeThumbColor: AppColors.orange,
                               onChanged: starting
                                   ? null
                                   : (enabled) async {
@@ -412,16 +308,14 @@ class _SettingsBody extends StatelessWidget {
                                         );
                                       }
                                     },
-                              activeThumbColor: AppColors.orange,
-                              contentPadding: EdgeInsets.zero,
                             ),
                             if (apiServer.allInterfaces.value)
                               Container(
                                 margin: const EdgeInsets.only(top: 4, bottom: 8),
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppColors.orange.withOpacity(0.1),
-                                  border: Border.all(color: AppColors.orange.withOpacity(0.3)),
+                                  color: AppColors.orange.withValues(alpha: 0.10),
+                                  border: Border.all(color: AppColors.orange.withValues(alpha: 0.30)),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
@@ -483,16 +377,16 @@ class _SettingsBody extends StatelessWidget {
                                 filled: true,
                                 fillColor: context.bgInput,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: context.border),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: context.border),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: context.accent),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
                                 ),
                               ),
                               onFieldSubmitted: (value) async {
@@ -526,19 +420,19 @@ class _SettingsBody extends StatelessWidget {
                             const SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,
-                              child: OutlinedButton(
+                              child: FilledButton.tonal(
                                 onPressed: () {
                                   Get.toNamed('/api-endpoints');
                                 },
-                                child: const Text('Sample Endpoints & Testing'),
-                                style: OutlinedButton.styleFrom(
+                                style: FilledButton.styleFrom(
                                   foregroundColor: context.text,
-                                  side: BorderSide(color: context.border),
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  backgroundColor: context.bgInput,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
+                                child: const Text('Sample Endpoints & Testing'),
                               ),
                             ),
                             if (apiServer.errorMessage.value.isNotEmpty) ...[
@@ -559,7 +453,8 @@ class _SettingsBody extends StatelessWidget {
                 ],
               ),
 
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'Storage & Tools',
                 children: [
                   _menuTile(
@@ -573,18 +468,15 @@ class _SettingsBody extends StatelessWidget {
                       Get.snackbar('Path Copied', 'Model storage path copied to clipboard.', snackPosition: SnackPosition.BOTTOM);
                     },
                   ),
-                  const SizedBox(height: 6),
                   _menuTile(
                     context,
                     title: 'App Logs',
                     subtitle: 'View logs, errors & share with developers',
                     leadingIcon: null,
                     leadingColor: AppColors.orange,
-                    trailing: Icon(Icons.arrow_forward_ios_rounded,
-                        size: 14, color: context.textD),
+                    trailing: Icon(Icons.chevron_right_rounded, size: 20, color: context.textD),
                     onTap: () => Get.toNamed('/logs'),
                   ),
-                  const SizedBox(height: 6),
                   _menuTile(
                     context,
                     title: 'Clear Temporary Cache',
@@ -613,7 +505,8 @@ class _SettingsBody extends StatelessWidget {
                 ],
               ),
 
-              _SectionGroup(
+              _sectionGroup(
+                context,
                 title: 'Danger Zone',
                 children: [
                   _menuTile(
@@ -624,7 +517,7 @@ class _SettingsBody extends StatelessWidget {
                     leadingColor: AppColors.red,
                     trailing: null,
                     surface: context.bgPanel,
-                    borderColor: AppColors.red.withOpacity(0.25),
+                    borderColor: AppColors.red.withValues(alpha: 0.25),
                     onTap: () async {
                       String typed = '';
                       final confirmed = await Get.dialog<bool?>(
@@ -687,11 +580,53 @@ class _SettingsBody extends StatelessWidget {
                   ],
                 ),
               ),
-
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _header(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        8,
+        showBackButton ? MediaQuery.of(context).padding.top + 4 : 8,
+        16,
+        6,
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(
+              showBackButton ? Icons.arrow_back_rounded : Icons.menu_rounded,
+              color: context.text,
+            ),
+            onPressed: showBackButton
+                ? () => Get.back()
+                : (onOpenDrawer ?? () => Scaffold.of(context).openDrawer()),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Settings',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: context.text,
+                  ),
+                ),
+                Text(
+                  'Customize app behavior and performance',
+                  style: TextStyle(fontSize: 12, color: context.textD),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -700,9 +635,9 @@ class _SettingsBody extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: context.textD,
-        letterSpacing: 0.8,
+        fontWeight: FontWeight.w700,
+        color: context.textM,
+        letterSpacing: 0.6,
       ),
     );
   }
@@ -718,136 +653,127 @@ class _SettingsBody extends StatelessWidget {
     Color? surface,
     Color? borderColor,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: surface ?? context.bgPanel,
-        borderRadius: BorderRadius.circular(16),
-        border: borderColor == null ? null : Border.all(color: borderColor),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                if (leadingIcon != null) ...[
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: (leadingColor ?? context.accent).withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      leadingIcon,
-                      size: 16,
-                      color: leadingColor ?? context.accent,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ] else ...[
-                  const SizedBox(width: 4),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: context.text,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: context.textD,
-                          fontSize: 12,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+    return _surfaceCard(
+      context,
+      color: surface,
+      borderColor: borderColor,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        leading: leadingIcon == null
+            ? null
+            : CircleAvatar(
+                radius: 16,
+                backgroundColor: (leadingColor ?? context.accent).withValues(alpha: 0.14),
+                child: Icon(
+                  leadingIcon,
+                  size: 18,
+                  color: leadingColor ?? context.accent,
                 ),
-                if (trailing != null) ...[
-                  const SizedBox(width: 12),
-                  trailing,
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tempPresetChip(BuildContext context, ChatController chatCtrl, double value, String label) {
-    final temperature = chatCtrl.temperature.value.clamp(0.0, 2.0).toDouble();
-    final selected = (temperature - value).abs() < 0.05;
-    return InkWell(
-      onTap: () => chatCtrl.updateTemperature(value),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.accent.withOpacity(0.18) : context.bgPanel,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? AppColors.accent : context.border),
-        ),
-        child: Text(
-          label,
+              ),
+        title: Text(
+          title,
           style: TextStyle(
-            color: selected ? AppColors.accent : context.text,
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: context.text,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
           ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: context.textD, fontSize: 12),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: trailing,
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _materialSwitchTile(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+    Color? activeThumbColor,
+  }) {
+    return _surfaceCard(
+      context,
+      color: context.bgInput,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: context.text,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: context.textD, fontSize: 12),
+        ),
+        trailing: Switch.adaptive(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: activeThumbColor,
         ),
       ),
     );
   }
 
-  Widget _SectionGroup({
+  Widget _tempPresetChip(
+    BuildContext context,
+    ChatController chatCtrl,
+    double value,
+    String label,
+    double temperature,
+  ) {
+    final selected = (temperature - value).abs() < 0.05;
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => chatCtrl.updateTemperature(value),
+      labelStyle: TextStyle(
+        color: selected ? context.accent : context.text,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      ),
+      selectedColor: context.accent.withValues(alpha: 0.16),
+      backgroundColor: context.bgInput,
+      side: BorderSide(
+        color: selected ? context.accent.withValues(alpha: 0.45) : Colors.transparent,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+    );
+  }
+
+  Widget _sectionGroup(
+    BuildContext context, {
     required String title,
     required List<Widget> children,
-    bool wrapInCard = true,
   }) {
-    return Builder(
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionHeader(context, title),
-              const SizedBox(height: 6),
-              if (wrapInCard)
-                _card(
-                  context,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _interleave(children, const SizedBox(height: 8)),
-                    ),
-                  ),
-                )
-              else
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _interleave(children, const SizedBox(height: 8)),
-                ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader(context, title),
+          const SizedBox(height: 10),
+          _surfaceCard(
+            context,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _interleave(children, const SizedBox(height: 10)),
+              ),
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -861,12 +787,21 @@ class _SettingsBody extends StatelessWidget {
     return result;
   }
 
-  Widget _card(BuildContext context, {required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.bgPanel,
+  Widget _surfaceCard(
+    BuildContext context, {
+    required Widget child,
+    Color? color,
+    Color? borderColor,
+  }) {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: color ?? context.bgPanel,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.borderFaint),
+        side: borderColor == null
+            ? BorderSide.none
+            : BorderSide(color: borderColor.withValues(alpha: 0.35)),
       ),
       child: child,
     );
@@ -876,8 +811,8 @@ class _SettingsBody extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         text,
@@ -997,24 +932,17 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: context.bgPanel,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.border),
+        color: context.bgInput,
+        borderRadius: BorderRadius.circular(14),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Recommended Auto Config ──
-          Row(
-            children: [
-              Icon(Icons.auto_awesome_rounded, size: 18, color: context.accent),
-              const SizedBox(width: 8),
-              Text(
-                'Compute Device',
-                style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-            ],
+          Text(
+            'Compute Device',
+            style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1037,14 +965,11 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
               style: OutlinedButton.styleFrom(
                 backgroundColor: context.bgInput,
                 foregroundColor: context.text,
-                side: BorderSide(
-                  color: context.isDark ? context.borderFaint : context.border,
-                  width: 1.2,
-                ),
+                side: BorderSide.none,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
@@ -1162,14 +1087,12 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
       child: InkWell(
         onTap: () => _saveBackend(value),
         borderRadius: BorderRadius.circular(8),
-            child: Container(
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? context.accent : context.bgInput,
+            color: selected ? context.accent : context.bgPanel,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: selected ? context.accent : context.border,
-            ),
+            border: Border.all(color: Colors.transparent),
           ),
           child: Center(
             child: Text(
