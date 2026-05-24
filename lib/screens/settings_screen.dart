@@ -457,47 +457,68 @@ class _SettingsBody extends StatelessWidget {
                 context,
                 title: 'Storage & Tools',
                 children: [
-                  _boxedTile(
+                  _surfaceCard(
                     context,
-                    title: 'Model Storage',
-                    subtitle: modelManager.modelsDir,
-                    trailing: null,
-                    onTap: () async {
-                      await Clipboard.setData(ClipboardData(text: modelManager.modelsDir));
-                      Get.snackbar('Path Copied', 'Model storage path copied to clipboard.', snackPosition: SnackPosition.BOTTOM);
-                    },
+                    borderColor: context.border,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      title: Text(
+                        'Model Storage',
+                        style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(modelManager.modelsDir, style: TextStyle(color: context.textD, fontSize: 12)),
+                      trailing: null,
+                      onTap: () async {
+                        await Clipboard.setData(ClipboardData(text: modelManager.modelsDir));
+                        Get.snackbar('Path Copied', 'Model storage path copied to clipboard.', snackPosition: SnackPosition.BOTTOM);
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  _boxedTile(
+                  _surfaceCard(
                     context,
-                    title: 'App Logs',
-                    subtitle: 'View logs, errors & share with developers',
-                    trailing: Icon(Icons.chevron_right_rounded, size: 20, color: context.textD),
-                    onTap: () => Get.toNamed('/logs'),
+                    borderColor: context.border,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      title: Text(
+                        'App Logs',
+                        style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text('View logs, errors & share with developers', style: TextStyle(color: context.textD, fontSize: 12)),
+                      trailing: Icon(Icons.chevron_right_rounded, size: 20, color: context.textD),
+                      onTap: () => Get.toNamed('/logs'),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  _boxedTile(
+                  _surfaceCard(
                     context,
-                    title: 'Clear Temporary Cache',
-                    subtitle: 'Remove temporary app files',
-                    trailing: null,
-                    onTap: () async {
-                      final confirmed = await Get.dialog<bool?>(
-                        AlertDialog(
-                          backgroundColor: context.bgPanel,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          title: Text('Clear Temporary Cache', style: TextStyle(color: context.text)),
-                          content: Text('Remove temporary cached files used by the system picker?', style: TextStyle(color: context.textM)),
-                          actions: [
-                            TextButton(onPressed: () => Get.back(result: false), child: Text('Cancel', style: TextStyle(color: context.textD))),
-                            ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('Clear')),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true) {
-                        await Get.find<ModelController>().clearCache();
-                      }
-                    },
+                    borderColor: context.border,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      title: Text(
+                        'Clear Temporary Cache',
+                        style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text('Remove temporary app files', style: TextStyle(color: context.textD, fontSize: 12)),
+                      trailing: null,
+                      onTap: () async {
+                        final confirmed = await Get.dialog<bool?>(
+                          AlertDialog(
+                            backgroundColor: context.bgPanel,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            title: Text('Clear Temporary Cache', style: TextStyle(color: context.text)),
+                            content: Text('Remove temporary cached files used by the system picker?', style: TextStyle(color: context.textM)),
+                            actions: [
+                              TextButton(onPressed: () => Get.back(result: false), child: Text('Cancel', style: TextStyle(color: context.textD))),
+                              ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('Clear')),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true) {
+                          await Get.find<ModelController>().clearCache();
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -969,24 +990,30 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
           const SizedBox(height: 12),
 
           // Recommended button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _applyAutoConfig,
-              icon: Icon(
-                Icons.tune_rounded,
-                size: 16,
-                color: context.text,
-              ),
-              label: const Text('Apply Recommended Settings'),
-              style: OutlinedButton.styleFrom(
-                backgroundColor: context.bgInput,
-                foregroundColor: context.text,
-                side: BorderSide(color: context.border.withValues(alpha: 0.6)),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: context.border.withValues(alpha: 0.6)),
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _applyAutoConfig,
+                icon: Icon(
+                  Icons.tune_rounded,
+                  size: 16,
+                  color: context.text,
+                ),
+                label: const Text('Apply Recommended Settings'),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: context.bgInput,
+                  foregroundColor: context.text,
+                  side: BorderSide.none,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),
