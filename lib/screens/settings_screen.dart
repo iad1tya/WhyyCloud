@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../controllers/chat_controller.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/model_controller.dart';
+import '../routes/app_routes.dart';
 import '../services/local_api_server_service.dart';
 import '../services/model_manager.dart';
 import '../services/background_optimizer_service.dart';
@@ -50,364 +51,55 @@ class _SettingsBody extends StatelessWidget {
         _header(context),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
             children: [
-              _sectionGroup(
+              _sectionTitle(context, 'Preferences'),
+              const SizedBox(height: 8),
+              _optionSection(
                 context,
-                title: 'Appearance',
                 children: [
-                  Obx(
-                    () => _materialSwitchTile(
-                      context,
-                      title: 'Dark Mode',
-                      subtitle: themeCtrl.isDarkMode
-                          ? 'Using dark theme'
-                          : 'Using light theme',
-                      value: themeCtrl.isDarkMode,
-                      activeThumbColor: context.accent,
-                      onChanged: (val) => themeCtrl.toggleTheme(),
-                    ),
-                  ),
-                ],
-              ),
-
-              _sectionGroup(
-                context,
-                title: 'AI Behavior',
-                children: [
-                  Text(
-                    'Global System Prompt',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: context.text,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Applied to all new chats. Existing chats keep their own prompt.',
-                    style: TextStyle(fontSize: 13, color: context.textD, height: 1.35),
-                  ),
-                  const SizedBox(height: 10),
-                  Obx(
-                    () => TextFormField(
-                      key: ValueKey('system-prompt-${chatCtrl.systemPrompt.value.length}'),
-                      initialValue: chatCtrl.systemPrompt.value,
-                      maxLines: 4,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: context.text,
-                        height: 1.5,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'e.g. You are a helpful assistant...',
-                        hintStyle: TextStyle(color: context.textD),
-                        filled: true,
-                        fillColor: context.bgInput,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
-                      onChanged: (v) => chatCtrl.setGlobalSystemPrompt(v),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: FilledButton.tonalIcon(
-                      onPressed: () {
-                        chatCtrl.clearGlobalSystemPrompt();
-                        Get.snackbar(
-                          'Cleared',
-                          'Global system prompt removed.',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                      },
-                      icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.red),
-                      label: const Text(
-                        'Clear Prompt',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                      ),
-                      style: FilledButton.styleFrom(
-                        foregroundColor: AppColors.red,
-                        backgroundColor: AppColors.red.withValues(alpha: 0.14),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              _sectionGroup(
-                context,
-                title: 'Behavior',
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Temperature',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: context.text,
-                      ),
-                    ),
-                    subtitle: Text(
-                      'Select one response style preset.',
-                      style: TextStyle(fontSize: 13, color: context.textD),
-                    ),
-                    trailing: Obx(
-                      () => Chip(
-                        label: Text(chatCtrl.temperature.value.toStringAsFixed(1)),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ),
-                  Obx(
-                    () {
-                      final temperature = chatCtrl.temperature.value.clamp(0.0, 2.0).toDouble();
-                      return Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          _tempPresetChip(context, chatCtrl, 0.0, '0.0', temperature),
-                          _tempPresetChip(context, chatCtrl, 0.7, '0.7 Default', temperature),
-                          _tempPresetChip(context, chatCtrl, 1.0, '1.0', temperature),
-                          _tempPresetChip(context, chatCtrl, 1.5, '1.5', temperature),
-                          _tempPresetChip(context, chatCtrl, 2.0, '2.0', temperature),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              if (Platform.isAndroid) ...[
-                _sectionGroup(
-                  context,
-                  title: 'System',
-                  children: [
-                    _menuTile(
-                      context,
-                      title: 'Battery Optimization',
-                      subtitle: 'Disable to prevent background killing',
-                      leadingIcon: null,
-                      trailing: FutureBuilder<bool>(
-                        future: BackgroundOptimizerService.isOptimizationDisabled(),
-                        builder: (context, snapshot) {
-                          final disabled = snapshot.data ?? false;
-                          if (disabled) {
-                            return const Icon(Icons.check_circle_rounded,
-                                color: AppColors.green, size: 20);
-                          }
-                          return const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 14, color: Colors.white);
-                        },
-                      ),
-                      onTap: () async {
-                        await BackgroundOptimizerService.openBatterySettings();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-
-              _sectionGroup(
-                context,
-                title: 'Hardware',
-                children: [
-                  _HardwareSettingsCard(storage: storage),
-                ],
-              ),
-
-              _sectionGroup(
-                context,
-                title: 'Connectivity',
-                children: [
-                  _surfaceCard(
+                  _toggleRow(
                     context,
-                    child: Obx(() {
-                      final running = apiServer.isRunning.value;
-                      final starting = apiServer.isStarting.value;
-                      final ready = apiServer.hasLoadedModel;
-                      final busy = apiServer.isBusy;
-                      final statusText = starting
-                          ? 'Starting'
-                          : running
-                          ? ready
-                                ? busy
-                                      ? 'Busy'
-                                      : 'Running'
-                                : 'No model loaded'
-                          : 'Stopped';
-                      final statusColor = running && ready
-                          ? AppColors.green
-                          : running
-                          ? AppColors.orange
-                          : context.textD;
+                    title: 'Theme mode',
+                    value: themeCtrl.isDarkMode,
+                    valueLabel: themeCtrl.isDarkMode ? 'Dark' : 'Light',
+                    onChanged: (val) => themeCtrl.toggleTheme(),
+                  ),
+                  _actionRow(
+                    context,
+                    title: 'Model Library',
+                    value: 'Open',
+                    onTap: () => Get.toNamed(AppRoutes.modelLibrary),
+                  ),
+                  _actionRow(
+                    context,
+                    title: 'Global Prompt',
+                    value: chatCtrl.systemPrompt.value.isEmpty ? 'Default' : 'Custom',
+                    onTap: () => _showPromptEditor(context, chatCtrl),
+                  ),
+                ],
+              ),
 
-                      return Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _materialSwitchTile(
-                              context,
-                              title: 'Local API server',
-                              subtitle: 'OpenAI base URL: ${apiServer.baseUrl}',
-                              value: running,
-                              activeThumbColor: context.accent,
-                              onChanged: starting
-                                  ? null
-                                  : (enabled) async {
-                                      try {
-                                        if (enabled) {
-                                          await apiServer.start();
-                                        } else {
-                                          await apiServer.stop();
-                                        }
-                                      } catch (e) {
-                                        Get.snackbar(
-                                          'Local API Error',
-                                          e.toString(),
-                                          snackPosition: SnackPosition.BOTTOM,
-                                        );
-                                      }
-                                    },
-                            ),
-                            const SizedBox(height: 10),
-                            _materialSwitchTile(
-                              context,
-                              title: 'Allow External Connections',
-                              subtitle: 'Listen on 0.0.0.0 instead of localhost',
-                              value: apiServer.allInterfaces.value,
-                              activeThumbColor: AppColors.orange,
-                              onChanged: starting
-                                  ? null
-                                  : (enabled) async {
-                                      try {
-                                        await apiServer.setAllInterfaces(enabled);
-                                      } catch (e) {
-                                        Get.snackbar(
-                                          'Settings Error',
-                                          e.toString(),
-                                          snackPosition: SnackPosition.BOTTOM,
-                                        );
-                                      }
-                                    },
-                            ),
-                            if (apiServer.allInterfaces.value)
-                              Container(
-                                margin: const EdgeInsets.only(top: 4, bottom: 8),
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.orange.withValues(alpha: 0.10),
-                                  border: Border.all(color: AppColors.orange.withValues(alpha: 0.30)),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.orange),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Anyone on your network can access your loaded model.',
-                                        style: TextStyle(fontSize: 11, color: context.text),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                _statusChip(context, statusText, statusColor),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: FutureBuilder<String?>(
-                                    future: apiServer.allInterfaces.value
-                                        ? apiServer.getDeviceIp()
-                                        : Future.value(null),
-                                    builder: (context, snapshot) {
-                                      String url = apiServer.baseUrl;
-                                      if (apiServer.allInterfaces.value && snapshot.hasData) {
-                                        url = 'http://${snapshot.data}:${apiServer.port.value}/v1';
-                                      }
-                                      return SelectableText(
-                                        url,
-                                        style: TextStyle(
-                                          color: context.text,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              key: ValueKey('api-port-${apiServer.port.value}'),
-                              initialValue: apiServer.port.value.toString(),
-                              keyboardType: TextInputType.number,
-                              style: TextStyle(color: context.text, fontSize: 13),
-                              decoration: InputDecoration(
-                                labelText: 'Port',
-                                helperText:
-                                    'Use API key "local" in clients that require one.',
-                                labelStyle: TextStyle(color: context.textM),
-                                helperStyle: TextStyle(
-                                  color: context.textD,
-                                  fontSize: 11,
-                                ),
-                                filled: true,
-                                fillColor: context.bgInput,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                              onFieldSubmitted: (value) async {
-                                final parsed = int.tryParse(value.trim());
-                                if (parsed == null ||
-                                    parsed < 1024 ||
-                                    parsed > 65535) {
-                                  Get.snackbar(
-                                    'Invalid Port',
-                                    'Choose a port from 1024 to 65535.',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                  return;
-                                }
+              const SizedBox(height: 14),
+              _sectionTitle(context, 'Connection'),
+              const SizedBox(height: 8),
+              _optionSection(
+                context,
+                children: [
+                  Obx(() => _toggleRow(
+                        context,
+                        title: 'Local API server',
+                        value: apiServer.isRunning.value,
+                        valueLabel: apiServer.isRunning.value ? 'On' : 'Off',
+                        onChanged: apiServer.isStarting.value
+                            ? null
+                            : (enabled) async {
                                 try {
-                                  await apiServer.setPort(parsed);
-                                  Get.snackbar(
-                                    'Local API Updated',
-                                    'Base URL is ${apiServer.baseUrl}',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
+                                  if (enabled) {
+                                    await apiServer.start();
+                                  } else {
+                                    await apiServer.stop();
+                                  }
                                 } catch (e) {
                                   Get.snackbar(
                                     'Local API Error',
@@ -416,167 +108,118 @@ class _SettingsBody extends StatelessWidget {
                                   );
                                 }
                               },
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: FilledButton.tonal(
-                                onPressed: () {
-                                  Get.toNamed('/api-endpoints');
-                                },
-                                style: FilledButton.styleFrom(
-                                  foregroundColor: context.text,
-                                  backgroundColor: context.bgInput,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: const Text('Sample Endpoints & Testing'),
-                              ),
-                            ),
-                            if (apiServer.errorMessage.value.isNotEmpty) ...[
-                              const SizedBox(height: 10),
-                              Text(
-                                apiServer.errorMessage.value,
-                                style: const TextStyle(
-                                  color: AppColors.red,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    }),
+                      )),
+                  _actionRow(
+                    context,
+                    title: 'API Port',
+                    value: apiServer.port.value.toString(),
+                    onTap: () => _showPortEditor(context, apiServer),
+                  ),
+                  Obx(() => _toggleRow(
+                        context,
+                        title: 'Allow External Connections',
+                        value: apiServer.allInterfaces.value,
+                        valueLabel: apiServer.allInterfaces.value ? 'On' : 'Off',
+                        onChanged: apiServer.isStarting.value
+                            ? null
+                            : (enabled) async {
+                                try {
+                                  await apiServer.setAllInterfaces(enabled);
+                                } catch (e) {
+                                  Get.snackbar(
+                                    'Settings Error',
+                                    e.toString(),
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                }
+                              },
+                      )),
+                  _actionRow(
+                    context,
+                    title: 'Sample Endpoints',
+                    value: 'Test',
+                    onTap: () => Get.toNamed(AppRoutes.apiEndpoints),
                   ),
                 ],
               ),
 
-              _sectionGroup(
+              const SizedBox(height: 14),
+              _sectionTitle(context, 'System'),
+              const SizedBox(height: 8),
+              _optionSection(
                 context,
-                title: 'Storage & Tools',
                 children: [
-                  _surfaceCard(
+                  _actionRow(
                     context,
-                    borderColor: context.border,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      title: Text(
-                        'Model Storage',
-                        style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(modelManager.modelsDir, style: TextStyle(color: context.textD, fontSize: 12)),
-                      trailing: null,
+                    title: 'Compute Device',
+                    value: _hardwareSummary(storage),
+                    onTap: () => _showHardwareSheet(context, storage),
+                  ),
+                  if (Platform.isAndroid)
+                    _actionRow(
+                      context,
+                      title: 'Battery Optimization',
+                      value: '',
                       onTap: () async {
-                        await Clipboard.setData(ClipboardData(text: modelManager.modelsDir));
-                        Get.snackbar('Path Copied', 'Model storage path copied to clipboard.', snackPosition: SnackPosition.BOTTOM);
+                        await BackgroundOptimizerService.openBatterySettings();
                       },
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  _surfaceCard(
+                  _actionRow(
                     context,
-                    borderColor: context.border,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      title: Text(
-                        'App Logs',
-                        style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text('View logs, errors & share with developers', style: TextStyle(color: context.textD, fontSize: 12)),
-                      trailing: Icon(Icons.chevron_right_rounded, size: 20, color: context.textD),
-                      onTap: () => Get.toNamed('/logs'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _surfaceCard(
-                    context,
-                    borderColor: context.border,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      title: Text(
-                        'Clear Temporary Cache',
-                        style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text('Remove temporary app files', style: TextStyle(color: context.textD, fontSize: 12)),
-                      trailing: null,
-                      onTap: () async {
-                        final confirmed = await Get.dialog<bool?>(
-                          AlertDialog(
-                            backgroundColor: context.bgPanel,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            title: Text('Clear Temporary Cache', style: TextStyle(color: context.text)),
-                            content: Text('Remove temporary cached files used by the system picker?', style: TextStyle(color: context.textM)),
-                            actions: [
-                              TextButton(onPressed: () => Get.back(result: false), child: Text('Cancel', style: TextStyle(color: context.textD))),
-                              ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('Clear')),
-                            ],
-                          ),
-                        );
-                        if (confirmed == true) {
-                          await Get.find<ModelController>().clearCache();
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              _sectionGroup(
-                context,
-                title: 'Danger Zone',
-                children: [
-                  _boxedTile(
-                    context,
-                    title: 'Delete All Chats',
-                    subtitle: 'Remove every conversation from this device',
-                    trailing: null,
-                    surface: context.bgPanel,
-                    borderColor: AppColors.red.withValues(alpha: 0.25),
+                    title: 'Model Storage',
+                    value: 'Copy',
                     onTap: () async {
-                      String typed = '';
-                      final confirmed = await Get.dialog<bool?>(
-                        AlertDialog(
-                          backgroundColor: context.bgPanel,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          title: Text('Delete All Chats?', style: TextStyle(color: context.text)),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('Type DELETE to confirm. This cannot be undone.', style: TextStyle(color: context.textM)),
-                              const SizedBox(height: 12),
-                              TextField(
-                                autofocus: true,
-                                onChanged: (v) => typed = v.trim(),
-                                decoration: InputDecoration(
-                                  hintText: 'Type DELETE to confirm',
-                                  filled: true,
-                                  fillColor: context.bgInput,
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(onPressed: () => Get.back(result: false), child: Text('Cancel', style: TextStyle(color: context.textD))),
-                            ElevatedButton(onPressed: () => Get.back(result: typed == 'DELETE'), style: ElevatedButton.styleFrom(backgroundColor: AppColors.red), child: const Text('Delete All', style: TextStyle(color: Colors.white))),
-                          ],
-                        ),
+                      await Clipboard.setData(ClipboardData(text: modelManager.modelsDir));
+                      Get.snackbar(
+                        'Path Copied',
+                        'Model storage path copied to clipboard.',
+                        snackPosition: SnackPosition.BOTTOM,
                       );
-                      if (confirmed == true) {
-                        // Persist deletion and clear in-memory state
-                        await Get.find<ChatStorageService>().deleteAllChats();
-                        chatCtrl.chats.clear();
-                        chatCtrl.activeChatId.value = null;
-                        Get.snackbar('Done', 'All chats deleted.', snackPosition: SnackPosition.BOTTOM);
-                      }
+                    },
+                  ),
+                  _actionRow(
+                    context,
+                    title: 'App Logs',
+                    value: 'Open',
+                    onTap: () => Get.toNamed(AppRoutes.logs),
+                  ),
+                  _actionRow(
+                    context,
+                    title: 'Clear Temporary Cache',
+                    value: 'Clear',
+                    onTap: () async {
+                      await Get.find<ModelController>().clearCache();
                     },
                   ),
                 ],
               ),
 
               const SizedBox(height: 14),
+              _sectionTitle(context, 'Danger Zone'),
+              const SizedBox(height: 8),
+              _optionSection(
+                context,
+                children: [
+                  _destructiveRow(
+                    context,
+                    title: 'Delete All Chats',
+                    onTap: () => _confirmDeleteAllChats(context, chatCtrl),
+                  ),
+                  _destructiveRow(
+                    context,
+                    title: 'Reinstall the App',
+                    onTap: () => _confirmReinstallApp(
+                      context,
+                      chatCtrl: chatCtrl,
+                      themeCtrl: themeCtrl,
+                      apiServer: apiServer,
+                      storage: storage,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
               Center(
                 child: Column(
                   children: [
@@ -651,177 +294,362 @@ class _SettingsBody extends StatelessWidget {
     );
   }
 
-  Widget _sectionHeader(BuildContext context, String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        color: context.textM,
-        letterSpacing: 0.6,
+  Widget _sectionTitle(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: context.textM,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
 
-  Widget _menuTile(
+  Widget _optionSection(
     BuildContext context, {
-    required String title,
-    required String subtitle,
-    IconData? leadingIcon,
-    Color? leadingColor,
-    Widget? trailing,
-    VoidCallback? onTap,
-    Color? surface,
-    Color? borderColor,
-  }) {
-    return _surfaceCard(
-      context,
-      color: surface,
-      borderColor: borderColor,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        leading: leadingIcon == null
-            ? null
-            : CircleAvatar(
-                radius: 16,
-                backgroundColor: (leadingColor ?? context.accent).withValues(alpha: 0.14),
-                child: Icon(
-                  leadingIcon,
-                  size: 18,
-                  color: leadingColor ?? context.accent,
-                ),
-              ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: context.text,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(color: context.textD, fontSize: 12),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: trailing,
-        onTap: onTap,
-      ),
-    );
-  }
-
-  Widget _materialSwitchTile(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool>? onChanged,
-    Color? activeThumbColor,
-  }) {
-    return _surfaceCard(
-      context,
-      color: context.bgInput,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: context.text,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(color: context.textD, fontSize: 12),
-        ),
-        trailing: Switch.adaptive(
-          value: value,
-          onChanged: onChanged,
-          activeThumbColor: activeThumbColor,
-        ),
-      ),
-    );
-  }
-
-  Widget _tempPresetChip(
-    BuildContext context,
-    ChatController chatCtrl,
-    double value,
-    String label,
-    double temperature,
-  ) {
-    final selected = (temperature - value).abs() < 0.05;
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => chatCtrl.updateTemperature(value),
-      labelStyle: TextStyle(
-        color: context.text,
-        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-      ),
-      checkmarkColor: Colors.white,
-      selectedColor: context.accent.withValues(alpha: 0.18),
-      backgroundColor: context.bgInput,
-      side: BorderSide(
-        color: selected ? context.accent.withValues(alpha: 0.45) : Colors.transparent,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-    );
-  }
-
-  Widget _sectionGroup(
-    BuildContext context, {
-    required String title,
     required List<Widget> children,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+    return Container(
+      decoration: BoxDecoration(
+        color: context.bgPanel,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.borderFaint),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionHeader(context, title),
-          const SizedBox(height: 10),
-          _surfaceCard(
-            context,
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _interleave(children, const SizedBox(height: 10)),
+        children: _interleave(
+          children,
+          Divider(height: 1, thickness: 1, color: context.borderFaint),
+        ),
+      ),
+    );
+  }
+
+  Widget _actionRow(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required VoidCallback onTap,
+    Color? valueColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: context.text,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
+            if (value.isNotEmpty) ...[
+              Text(
+                value,
+                style: TextStyle(
+                  color: valueColor ?? context.textM,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: context.textD,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toggleRow(
+    BuildContext context, {
+    required String title,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+    String? valueLabel,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: context.text,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          if (valueLabel != null) ...[
+            Text(
+              valueLabel,
+              style: TextStyle(
+                color: value ? context.accent : context.textM,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Switch.adaptive(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: context.accent,
           ),
         ],
       ),
     );
   }
 
-  Widget _boxedTile(
+  Widget _destructiveRow(
     BuildContext context, {
     required String title,
-    required String subtitle,
-    Widget? trailing,
-    VoidCallback? onTap,
-    Color? surface,
-    Color? borderColor,
+    required VoidCallback onTap,
   }) {
-    return _surfaceCard(
-      context,
-      color: surface,
-      borderColor: borderColor,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        title: Text(
-          title,
-          style: TextStyle(color: context.text, fontSize: 15, fontWeight: FontWeight.w600),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.red,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: AppColors.red.withValues(alpha: 0.85),
+            ),
+          ],
         ),
-        subtitle: Text(subtitle, style: TextStyle(color: context.textD, fontSize: 12)),
-        trailing: trailing,
-        onTap: onTap,
       ),
+    );
+  }
+
+  String _hardwareSummary(ChatStorageService storage) {
+    switch (storage.backendType) {
+      case 'vulkan':
+        return 'GPU Vulkan';
+      case 'opencl':
+        return 'GPU OpenCL';
+      default:
+        return 'CPU Only';
+    }
+  }
+
+  Future<void> _showPromptEditor(BuildContext context, ChatController chatCtrl) async {
+    final controller = TextEditingController(text: chatCtrl.systemPrompt.value);
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: context.bgPanel,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Global Prompt', style: TextStyle(color: context.text)),
+        content: TextField(
+          controller: controller,
+          maxLines: 5,
+          autofocus: true,
+          style: TextStyle(color: context.text, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: 'e.g. You are a helpful assistant...',
+            filled: true,
+            fillColor: context.bgInput,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancel', style: TextStyle(color: context.textD)),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.clear();
+              chatCtrl.clearGlobalSystemPrompt();
+              Get.back();
+            },
+            child: const Text('Clear', style: TextStyle(color: AppColors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              chatCtrl.setGlobalSystemPrompt(controller.text.trim());
+              Get.back();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
+  Future<void> _showPortEditor(BuildContext context, LocalApiServerService apiServer) async {
+    final controller = TextEditingController(text: apiServer.port.value.toString());
+    await Get.dialog(
+      AlertDialog(
+        backgroundColor: context.bgPanel,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('API Port', style: TextStyle(color: context.text)),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          style: TextStyle(color: context.text, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: '4891',
+            filled: true,
+            fillColor: context.bgInput,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancel', style: TextStyle(color: context.textD)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final parsed = int.tryParse(controller.text.trim());
+              if (parsed == null || parsed < 1024 || parsed > 65535) {
+                Get.snackbar(
+                  'Invalid Port',
+                  'Choose a port from 1024 to 65535.',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+                return;
+              }
+              await apiServer.setPort(parsed);
+              Get.back();
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
+  Future<void> _showHardwareSheet(BuildContext context, ChatStorageService storage) async {
+    await Get.bottomSheet(
+      SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.bg,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+          child: SingleChildScrollView(
+            child: _HardwareSettingsCard(storage: storage),
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Future<void> _confirmDeleteAllChats(BuildContext context, ChatController chatCtrl) async {
+    final confirmed = await Get.dialog<bool?>(
+      AlertDialog(
+        backgroundColor: context.bgPanel,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Delete All Chats?', style: TextStyle(color: context.text)),
+        content: Text(
+          'This removes every conversation from this device.',
+          style: TextStyle(color: context.textM),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('Cancel', style: TextStyle(color: context.textD)),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
+            child: const Text('Delete All', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await Get.find<ChatStorageService>().deleteAllChats();
+      chatCtrl.chats.clear();
+      chatCtrl.activeChatId.value = null;
+      Get.snackbar('Done', 'All chats deleted.', snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> _confirmReinstallApp(
+    BuildContext context, {
+    required ChatController chatCtrl,
+    required ThemeController themeCtrl,
+    required LocalApiServerService apiServer,
+    required ChatStorageService storage,
+  }) async {
+    final confirmed = await Get.dialog<bool?>(
+      AlertDialog(
+        backgroundColor: context.bgPanel,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Reinstall the App?', style: TextStyle(color: context.text)),
+        content: Text(
+          'This resets chats, prompts, API settings, hardware settings, theme, and temporary cache to defaults.',
+          style: TextStyle(color: context.textM),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('Cancel', style: TextStyle(color: context.textD)),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
+            child: const Text('Reset', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await apiServer.stop();
+    await Get.find<ChatStorageService>().deleteAllChats();
+    chatCtrl.chats.clear();
+    chatCtrl.activeChatId.value = null;
+    chatCtrl.clearGlobalSystemPrompt();
+    chatCtrl.updateTemperature(0.7);
+    themeCtrl.resetToDefault();
+    await Get.find<ModelController>().unloadModel();
+    await Get.find<ModelController>().clearCache();
+    storage.backendType = 'cpu';
+    storage.gpuLayers = 0;
+    storage.lastModelId = '';
+    await apiServer.resetToDefaults();
+
+    Get.snackbar(
+      'Reset Complete',
+      'The app has been returned to its default local state.',
+      snackPosition: SnackPosition.BOTTOM,
     );
   }
 
@@ -835,43 +663,6 @@ class _SettingsBody extends StatelessWidget {
     return result;
   }
 
-  Widget _surfaceCard(
-    BuildContext context, {
-    required Widget child,
-    Color? color,
-    Color? borderColor,
-  }) {
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: color ?? context.bgPanel,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: borderColor == null
-            ? BorderSide.none
-            : BorderSide(color: borderColor.withValues(alpha: 0.35)),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _statusChip(BuildContext context, String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
 }
 
 class _HardwareSettingsCard extends StatefulWidget {

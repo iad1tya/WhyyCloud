@@ -119,6 +119,16 @@ class LocalApiServerService extends GetxService {
     }
   }
 
+  Future<void> resetToDefaults() async {
+    await stop();
+    port.value = defaultPort;
+    allInterfaces.value = false;
+    errorMessage.value = '';
+    _storage.localApiServerPort = defaultPort;
+    _storage.localApiAllInterfaces = false;
+    _storage.localApiServerEnabled = false;
+  }
+
   /// Get the device's local network IP address.
   Future<String?> getDeviceIp() async {
     try {

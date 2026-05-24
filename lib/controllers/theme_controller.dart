@@ -25,4 +25,10 @@ class ThemeController extends GetxController {
     _box.put(_key, _isDarkMode.value);
     Get.changeThemeMode(themeMode);
   }
+
+  void resetToDefault() {
+    _isDarkMode.value = true;
+    _box.put(_key, true);
+    Get.changeThemeMode(themeMode);
+  }
 }
