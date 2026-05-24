@@ -379,7 +379,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 14),
               _attachmentChoice(
-                icon: Icons.image_rounded,
                 title: 'Attach Image',
                 subtitle: 'Pick a photo or screenshot',
                 onTap: () {
@@ -389,14 +388,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 8),
               _attachmentChoice(
-                icon: Icons.attach_file_rounded,
                 title: 'Attach File',
                 subtitle: 'Pick any file from your device',
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _pickAttachment(imageOnly: false);
                 },
-                ),
+              ),
             ],
           ),
         ),
@@ -688,25 +686,28 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        bottom: false, // let the bottom nav handle the safe area
-        child: IndexedStack(
-          index: _mobileTabIndex,
-          children: [
-            // Tab 0: Chat
-            _buildMobileChatTab(),
-            // Tab 1: Models
-            ModelLibraryScreen(
+      body: IndexedStack(
+        index: _mobileTabIndex,
+        children: [
+          // Tab 0: Chat
+          _buildMobileChatTab(),
+          // Tab 1: Models
+          SafeArea(
+            bottom: false,
+            child: ModelLibraryScreen(
               embedded: true,
               onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
             ),
-            // Tab 2: Settings
-            SettingsScreen(
+          ),
+          // Tab 2: Settings
+          SafeArea(
+            bottom: false,
+            child: SettingsScreen(
               embedded: true,
               onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       // Bottom navigation moved into the drawer for a cleaner minimal UI on mobile.
     );
@@ -770,9 +771,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         // Mobile top bar — minimal with SafeArea for status bar
-        SafeArea(
-          bottom: false,
-          child: _buildMobileTopBar(),
+        Container(
+          color: context.bgPanel,
+          child: SafeArea(
+            bottom: false,
+            child: _buildMobileTopBar(),
+          ),
         ),
         // Model loading progress banner
         Obx(() {
@@ -1558,7 +1562,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _attachmentChoice({
-    required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -1578,16 +1581,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: context.accent.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: context.accent, size: 20),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
