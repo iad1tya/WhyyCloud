@@ -120,7 +120,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
             decoration: BoxDecoration(
               color: context.bgPanel,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: context.borderFaint),
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
