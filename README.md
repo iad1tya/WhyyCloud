@@ -7,21 +7,6 @@
 
 Whyy Cloud is a comprehensive Flutter application that brings powerful, privacy-first local AI chat workflows directly to your mobile and desktop devices. Every chat, setting, and model remains exclusively on your device. The refined UI coordinates seamless model loading, parameter adjustments, transparent logs, and an integrated local API surface.
 
-## Top open-source models supported
-
-Run the latest open-source AI models directly on your device. From conversational AI to advanced reasoning, choose from industry-leading models optimized for your Android Smartphone.
-
-| Provider | Model Family | Description |
-| :--- | :--- | :--- |
-| <img src="assets/models_icons/meta-logo.png" width="24" alt="Meta"/> Meta | **Meta Llama** | Meta's flagship family of foundation models |
-| <img src="assets/models_icons/google-logo.png" width="24" alt="Google"/> Google | **Google Gemma** | Google's lightweight, state-of-the-art models |
-| <img src="assets/models_icons/huggingface-logo.png" width="24" alt="Hugging Face"/> Hugging Face | **Hugging Face SmolLM** | Compact, efficient models by Hugging Face |
-| <img src="assets/models_icons/deepseek-logo.png" width="24" alt="DeepSeek"/> DeepSeek | **DeepSeek** | Advanced reasoning and coding models |
-| <img src="assets/models_icons/qwen-logo.png" width="24" alt="Qwen"/> Qwen | **Qwen** | Alibaba's powerful multilingual models |
-| <img src="assets/models_icons/ibm-logo.png" width="24" alt="IBM"/> IBM | **IBM Granite** | IBM's open Granite models for enterprise AI |
-| <img src="assets/models_icons/cogito-logo.png" width="24" alt="Deep Cogito"/> Deep Cogito | **Deep Cogito** | Deep Cogito's reasoning-focused open models |
-| <img src="assets/models_icons/liquid-logo.png" width="24" alt="Liquid AI"/> Liquid AI | **Liquid AI LFM** | Liquid AI's efficient Liquid Foundation Models |
-
 ## Screenshots
 
 <div align="center">
@@ -41,6 +26,21 @@ Run the latest open-source AI models directly on your device. From conversationa
 - **Multimodal Support:** Voice inputs (Speech-to-Text), Text-to-Speech (TTS), and image/file attachments for vision models.
 - **Customizable UI:** Full dark/light mode support, aesthetic glassmorphism, and dynamic component styling.
 - **Deep Troubleshooting:** Built-in logs screen to monitor token generation speed, backend allocations, and diagnostic events.
+
+## Top open-source models supported
+
+Run the latest open-source AI models directly on your device. From conversational AI to advanced reasoning, choose from industry-leading models optimized for your Android Smartphone.
+
+| Provider | Model Family | Description |
+| :--- | :--- | :--- |
+| <img src="assets/models_icons/meta-logo.png" width="24" alt="Meta"/> Meta | **Meta Llama** | Meta's flagship family of foundation models |
+| <img src="assets/models_icons/google-logo.png" width="24" alt="Google"/> Google | **Google Gemma** | Google's lightweight, state-of-the-art models |
+| <img src="assets/models_icons/huggingface-logo.png" width="24" alt="Hugging Face"/> Hugging Face | **Hugging Face SmolLM** | Compact, efficient models by Hugging Face |
+| <img src="assets/models_icons/deepseek-logo.png" width="24" alt="DeepSeek"/> DeepSeek | **DeepSeek** | Advanced reasoning and coding models |
+| <img src="assets/models_icons/qwen-logo.png" width="24" alt="Qwen"/> Qwen | **Qwen** | Alibaba's powerful multilingual models |
+| <img src="assets/models_icons/ibm-logo.png" width="24" alt="IBM"/> IBM | **IBM Granite** | IBM's open Granite models for enterprise AI |
+| <img src="assets/models_icons/cogito-logo.png" width="24" alt="Deep Cogito"/> Deep Cogito | **Deep Cogito** | Deep Cogito's reasoning-focused open models |
+| <img src="assets/models_icons/liquid-logo.png" width="24" alt="Liquid AI"/> Liquid AI | **Liquid AI LFM** | Liquid AI's efficient Liquid Foundation Models |
 
 ## Getting Started
 
