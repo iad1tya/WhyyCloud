@@ -2,10 +2,8 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+// Removed microphone and TTS packages
 
 import '../theme/app_colors.dart';
 import '../controllers/chat_controller.dart';
@@ -33,13 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final _themeCtrl = Get.find<ThemeController>();
   final _msgController = TextEditingController();
   final _scrollController = ScrollController();
-  final _speech = SpeechToText();
-  final _tts = FlutterTts();
+  // voice features removed
   bool _sidebarOpen = true;
   bool _autoScrollToBottom = true;
-  bool _voiceServicesReady = false;
-  bool _isListening = false;
-  bool _speakReplies = true;
+  // voice flags removed
   String? _lastRenderedChatId;
 
   String? _pendingAttachmentName;
@@ -56,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleChatScroll);
-    _initializeVoiceServices();
+    // voice initialization removed
   }
 
   @override
@@ -64,8 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.removeListener(_handleChatScroll);
     _scrollController.dispose();
     _msgController.dispose();
-    _speech.stop();
-    _tts.stop();
+    // stopped voice services
     super.dispose();
   }
 
@@ -95,57 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _initializeVoiceServices() async {
-    if (!GetPlatform.isMobile || _voiceServicesReady) return;
-
-    final available = await _speech.initialize(
-      onStatus: _handleSpeechStatus,
-      onError: _handleSpeechError,
-    );
-
-    if (!mounted) return;
-
-    try {
-      await _tts.awaitSpeakCompletion(true);
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
-      await _tts.setPitch(1.0);
-      await _tts.setVolume(1.0);
-    } catch (_) {}
-
-    setState(() {
-      _voiceServicesReady = available;
-    });
-  }
-
-  void _handleSpeechStatus(String status) {
-    if (!_isListening) return;
-    if (status == 'done' || status == 'notListening') {
-      _finishVoiceCapture();
-    }
-  }
-
-  void _handleSpeechError(SpeechRecognitionError error) {
-    if (!mounted) return;
-    setState(() {
-      _isListening = false;
-    });
-  }
-
-  void _handleSpeechResult(dynamic result) {
-    if (!mounted) return;
-    final words = result.recognizedWords as String? ?? '';
-    if (words.isNotEmpty) {
-      _msgController.value = TextEditingValue(
-        text: words,
-        selection: TextSelection.collapsed(offset: words.length),
-      );
-    }
-
-    if (_isListening && result.finalResult == true) {
-      _finishVoiceCapture();
-    }
-  }
+  // Voice service methods removed
 
   Future<void> _send() async {
     final text = _msgController.text.trim();
@@ -176,95 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _scrollToBottom(force: true);
 
-    if (GetPlatform.isMobile) {
-      await _speakLatestAssistantReply();
-    }
+    // TTS disabled
   }
 
-  Future<void> _startVoiceInput() async {
-    if (!GetPlatform.isMobile) return;
+  // Voice input removed
 
-    if (_isListening) {
-      await _finishVoiceCapture();
-      return;
-    }
+  // finish voice capture removed
 
-    if (!_voiceServicesReady) {
-      await _initializeVoiceServices();
-    }
-
-    if (!_voiceServicesReady) {
-      if (!mounted) return;
-
-      return;
-    }
-
-    await _tts.stop();
-
-    if (!mounted) return;
-    setState(() {
-      _isListening = true;
-      _msgController.clear();
-    });
-
-    await _speech.listen(
-      onResult: _handleSpeechResult,
-      listenOptions: SpeechListenOptions(
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 2),
-        partialResults: true,
-        cancelOnError: true,
-        listenMode: ListenMode.dictation,
-      ),
-    );
-  }
-
-  Future<void> _finishVoiceCapture({bool sendMessage = true}) async {
-    if (!_isListening) return;
-
-    setState(() {
-      _isListening = false;
-    });
-
-    await _speech.stop();
-    if (!mounted) return;
-
-    if (!sendMessage) return;
-
-    final text = _msgController.text.trim();
-    if (text.isEmpty) return;
-
-    await _send();
-  }
-
-  Future<void> _speakLatestAssistantReply() async {
-    if (!GetPlatform.isMobile || !_speakReplies) return;
-
-    final chat = _chatCtrl.activeChat;
-    if (chat == null) return;
-
-    MessageModel? latestAssistant;
-    for (final message in chat.messages.reversed) {
-      if (message.isAssistant && message.content.trim().isNotEmpty) {
-        latestAssistant = message;
-        break;
-      }
-    }
-
-    final text = latestAssistant?.content.trim();
-    if (text == null || text.isEmpty) return;
-
-    try {
-      await _tts.stop();
-      await _tts.speak(text);
-    } catch (_) {}
-  }
-
-  void _toggleReplySpeech() {
-    setState(() {
-      _speakReplies = !_speakReplies;
-    });
-  }
+  // TTS removed
 
   void _clearAttachment() {
     setState(() {
@@ -1481,36 +1344,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 8),
                     Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
+                        children: [
                         _circleButton(
                           icon: Icons.add_rounded,
                           color: context.bgHover,
                           onTap: _showAttachmentSheet,
                           tooltip: 'Attach image or file',
-                        ),
-                        const SizedBox(width: 8),
-                        _circleButton(
-                          icon: _isListening
-                              ? Icons.mic_off_rounded
-                              : Icons.mic_rounded,
-                          color: _isListening ? AppColors.red : context.bgHover,
-                          onTap: () => _startVoiceInput(),
-                          tooltip: _isListening
-                              ? 'Stop voice input'
-                              : 'Voice chat',
-                        ),
-                        const SizedBox(width: 8),
-                        _circleButton(
-                          icon: _speakReplies
-                              ? Icons.volume_up_rounded
-                              : Icons.volume_off_rounded,
-                          color: _speakReplies
-                              ? context.bgHover
-                              : context.bgHover.withValues(alpha: 0.7),
-                          onTap: _toggleReplySpeech,
-                          tooltip: _speakReplies
-                              ? 'Disable reply voice'
-                              : 'Enable reply voice',
                         ),
                         const SizedBox(width: 8),
                         Obx(
