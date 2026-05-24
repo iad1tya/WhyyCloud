@@ -33,6 +33,8 @@ dependencies:
   google_fonts: ^6.2.1             # Inter font (matching FastChatUI)
   percent_indicator: ^4.2.4        # Download progress bars
   flutter_animate: ^4.5.0          # Micro-animations
+  speech_to_text: ^7.0.0           # Mobile speech recognition for voice input
+  flutter_tts: ^4.0.2              # Speak assistant replies aloud
   cupertino_icons: ^1.0.8
 
   # ── Background / Wake Lock ─────────────────────────────────────

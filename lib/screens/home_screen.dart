@@ -1,10 +1,17 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../theme/app_colors.dart';
 import '../controllers/chat_controller.dart';
 import '../controllers/model_controller.dart';
 import '../controllers/theme_controller.dart';
+import '../models/message_model.dart';
 import '../services/llm_service.dart';
 import '../widgets/chat_sidebar.dart';
 import '../widgets/chat_bubble.dart';
@@ -26,9 +33,19 @@ class _HomeScreenState extends State<HomeScreen> {
   final _themeCtrl = Get.find<ThemeController>();
   final _msgController = TextEditingController();
   final _scrollController = ScrollController();
+  final _speech = SpeechToText();
+  final _tts = FlutterTts();
   bool _sidebarOpen = true;
   bool _autoScrollToBottom = true;
+  bool _voiceServicesReady = false;
+  bool _isListening = false;
+  bool _speakReplies = true;
   String? _lastRenderedChatId;
+
+  String? _pendingAttachmentName;
+  String? _pendingAttachmentPath;
+  String? _pendingAttachmentMimeType;
+  String? _pendingAttachmentBase64;
 
   // Mobile bottom nav index: 0=Chat, 1=Models, 2=Settings
   int _mobileTabIndex = 0;
@@ -41,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleChatScroll);
+    _initializeVoiceServices();
   }
 
   @override
@@ -48,6 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.removeListener(_handleChatScroll);
     _scrollController.dispose();
     _msgController.dispose();
+    _speech.stop();
+    _tts.stop();
     super.dispose();
   }
 
@@ -77,21 +97,311 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _send() {
+  Future<void> _initializeVoiceServices() async {
+    if (!GetPlatform.isMobile || _voiceServicesReady) return;
+
+    final available = await _speech.initialize(
+      onStatus: _handleSpeechStatus,
+      onError: _handleSpeechError,
+    );
+
+    if (!mounted) return;
+
+    try {
+      await _tts.awaitSpeakCompletion(true);
+      await _tts.setLanguage('en-US');
+      await _tts.setSpeechRate(0.48);
+      await _tts.setPitch(1.0);
+      await _tts.setVolume(1.0);
+    } catch (_) {
+      // TTS setup is best-effort; voice chat still works without custom tuning.
+    }
+
+    setState(() {
+      _voiceServicesReady = available;
+    });
+  }
+
+  void _handleSpeechStatus(String status) {
+    if (!_isListening) return;
+    if (status == 'done' || status == 'notListening') {
+      _finishVoiceCapture();
+    }
+  }
+
+  void _handleSpeechError(SpeechRecognitionError error) {
+    if (!mounted) return;
+    setState(() {
+      _isListening = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error.errorMsg.isNotEmpty
+            ? error.errorMsg
+            : 'Voice input is not available right now'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _handleSpeechResult(dynamic result) {
+    if (!mounted) return;
+    final words = result.recognizedWords as String? ?? '';
+    if (words.isNotEmpty) {
+      _msgController.value = TextEditingValue(
+        text: words,
+        selection: TextSelection.collapsed(offset: words.length),
+      );
+    }
+
+    if (_isListening && result.finalResult == true) {
+      _finishVoiceCapture();
+    }
+  }
+
+  Future<void> _send() async {
     final text = _msgController.text.trim();
-    if (text.isEmpty) return;
+    final hasAttachment =
+        (_pendingAttachmentPath?.isNotEmpty ?? false) ||
+        (_pendingAttachmentBase64?.isNotEmpty ?? false);
+    if (text.isEmpty && !hasAttachment) return;
 
     if (_chatCtrl.activeChat == null) {
       _chatCtrl.newChat();
     }
 
+    final attachmentName = _pendingAttachmentName;
+    final attachmentPath = _pendingAttachmentPath;
+    final attachmentMimeType = _pendingAttachmentMimeType;
+    final attachmentBase64 = _pendingAttachmentBase64;
+
     _msgController.clear();
+    _clearAttachment();
     _autoScrollToBottom = true;
-    _chatCtrl.sendMessage(
+    await _chatCtrl.sendMessage(
       text,
       modelFilename: _modelCtrl.selectedModelFilename.value,
+      attachmentName: attachmentName,
+      attachmentPath: attachmentPath,
+      attachmentMimeType: attachmentMimeType,
+      attachmentBase64: attachmentBase64,
     );
     _scrollToBottom(force: true);
+
+    if (GetPlatform.isMobile) {
+      await _speakLatestAssistantReply();
+    }
+  }
+
+  Future<void> _startVoiceInput() async {
+    if (!GetPlatform.isMobile) return;
+
+    if (_isListening) {
+      await _finishVoiceCapture();
+      return;
+    }
+
+    if (!_voiceServicesReady) {
+      await _initializeVoiceServices();
+    }
+
+    if (!_voiceServicesReady) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Voice input is not available on this device'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    await _tts.stop();
+
+    if (!mounted) return;
+    setState(() {
+      _isListening = true;
+      _msgController.clear();
+    });
+
+    await _speech.listen(
+      onResult: _handleSpeechResult,
+      listenOptions: SpeechListenOptions(
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 2),
+        partialResults: true,
+        cancelOnError: true,
+        listenMode: ListenMode.dictation,
+      ),
+    );
+  }
+
+  Future<void> _finishVoiceCapture({bool sendMessage = true}) async {
+    if (!_isListening) return;
+
+    setState(() {
+      _isListening = false;
+    });
+
+    await _speech.stop();
+    if (!mounted) return;
+
+    if (!sendMessage) return;
+
+    final text = _msgController.text.trim();
+    if (text.isEmpty) return;
+
+    await _send();
+  }
+
+  Future<void> _speakLatestAssistantReply() async {
+    if (!GetPlatform.isMobile || !_speakReplies) return;
+
+    final chat = _chatCtrl.activeChat;
+    if (chat == null) return;
+
+    MessageModel? latestAssistant;
+    for (final message in chat.messages.reversed) {
+      if (message.isAssistant && message.content.trim().isNotEmpty) {
+        latestAssistant = message;
+        break;
+      }
+    }
+
+    final text = latestAssistant?.content.trim();
+    if (text == null || text.isEmpty) return;
+
+    try {
+      await _tts.stop();
+      await _tts.speak(text);
+    } catch (_) {
+      // If TTS fails, keep the chat functional and just skip audio playback.
+    }
+  }
+
+  void _toggleReplySpeech() {
+    setState(() {
+      _speakReplies = !_speakReplies;
+    });
+  }
+
+  void _clearAttachment() {
+    setState(() {
+      _pendingAttachmentName = null;
+      _pendingAttachmentPath = null;
+      _pendingAttachmentMimeType = null;
+      _pendingAttachmentBase64 = null;
+    });
+  }
+
+  Future<void> _pickAttachment({required bool imageOnly}) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: imageOnly ? FileType.image : FileType.any,
+      allowMultiple: false,
+      withData: true,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.single;
+    final bytes = file.bytes;
+
+    setState(() {
+      _pendingAttachmentName = file.name;
+      _pendingAttachmentPath = file.path;
+      _pendingAttachmentMimeType = _guessMimeType(file.name, imageOnly: imageOnly);
+      _pendingAttachmentBase64 = bytes != null ? base64Encode(bytes) : null;
+    });
+  }
+
+  String _guessMimeType(String fileName, {required bool imageOnly}) {
+    final extension = fileName.split('.').last.toLowerCase();
+
+    if (imageOnly) {
+      switch (extension) {
+        case 'jpg':
+        case 'jpeg':
+          return 'image/jpeg';
+        case 'png':
+          return 'image/png';
+        case 'gif':
+          return 'image/gif';
+        case 'webp':
+          return 'image/webp';
+        case 'bmp':
+          return 'image/bmp';
+        case 'svg':
+          return 'image/svg+xml';
+        default:
+          return 'image/*';
+      }
+    }
+
+    switch (extension) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'txt':
+        return 'text/plain';
+      case 'json':
+        return 'application/json';
+      case 'csv':
+        return 'text/csv';
+      case 'zip':
+        return 'application/zip';
+      case 'mp3':
+        return 'audio/mpeg';
+      case 'mp4':
+        return 'video/mp4';
+      default:
+        return 'application/octet-stream';
+    }
+  }
+
+  void _showAttachmentSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.bg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.textD,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _attachmentChoice(
+                icon: Icons.image_rounded,
+                title: 'Attach Image',
+                subtitle: 'Pick a photo or screenshot',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickAttachment(imageOnly: true);
+                },
+              ),
+              const SizedBox(height: 8),
+              _attachmentChoice(
+                icon: Icons.attach_file_rounded,
+                title: 'Attach File',
+                subtitle: 'Pick any file from your device',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickAttachment(imageOnly: false);
+                },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -900,8 +1210,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icons.keyboard_arrow_down_rounded,
                       size: 20,
                       color: context.textM,
-                    ),
-                  ],
+                      ),
+                    ],
                 ),
               ),
             );
@@ -1082,7 +1392,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 14, color: context.textM),
                 textAlign: TextAlign.center,
               ),
-            ),
+              ),
           ],
         ),
       ),
@@ -1105,35 +1415,52 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Text field
-            Expanded(
-              child: TextField(
-                controller: _msgController,
-                maxLines: 5,
-                minLines: 1,
-                textInputAction: TextInputAction.newline,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: context.text,
-                  height: 1.4,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Ask anything...',
-                  hintStyle: TextStyle(color: context.textD),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.fromLTRB(24, 14, 8, 14),
-                  suffixIconConstraints: const BoxConstraints(
-                    minWidth: 52,
-                    minHeight: 52,
-                  ),
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Obx(
+            if (_pendingAttachmentName != null) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: _buildAttachmentPreview(context),
+              ),
+            ],
+            if (!GetPlatform.isMobile)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _msgController,
+                        maxLines: 3,
+                        minLines: 1,
+                        textInputAction: TextInputAction.newline,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: context.text,
+                          height: 1.4,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Ask anything...',
+                          hintStyle: TextStyle(color: context.textD),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _circleButton(
+                      icon: Icons.add_rounded,
+                      color: context.bgHover,
+                      onTap: _showAttachmentSheet,
+                      tooltip: 'Attach image or file',
+                    ),
+                    const SizedBox(width: 8),
+                    Obx(
                       () => _chatCtrl.isGenerating.value
                           ? _circleButton(
                               icon: Icons.stop_rounded,
@@ -1144,16 +1471,211 @@ class _HomeScreenState extends State<HomeScreen> {
                           : _circleButton(
                               icon: Icons.arrow_upward_rounded,
                               color: context.accent,
-                              onTap: _send,
+                              onTap: () => _send(),
                               tooltip: 'Send',
                             ),
                     ),
-                  ),
+                  ],
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _msgController,
+                        maxLines: 2,
+                        minLines: 1,
+                        textInputAction: TextInputAction.newline,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: context.text,
+                          height: 1.35,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Ask anything...',
+                          hintStyle: TextStyle(color: context.textD),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _circleButton(
+                          icon: Icons.add_rounded,
+                          color: context.bgHover,
+                          onTap: _showAttachmentSheet,
+                          tooltip: 'Attach image or file',
+                        ),
+                        const SizedBox(width: 8),
+                        _circleButton(
+                          icon: _isListening ? Icons.mic_off_rounded : Icons.mic_rounded,
+                          color: _isListening ? AppColors.red : context.bgHover,
+                          onTap: () => _startVoiceInput(),
+                          tooltip: _isListening ? 'Stop voice input' : 'Voice chat',
+                        ),
+                        const SizedBox(width: 8),
+                        _circleButton(
+                          icon: _speakReplies ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                          color: _speakReplies ? context.bgHover : context.bgHover.withValues(alpha: 0.7),
+                          onTap: _toggleReplySpeech,
+                          tooltip: _speakReplies ? 'Disable reply voice' : 'Enable reply voice',
+                        ),
+                        const SizedBox(width: 8),
+                        Obx(
+                          () => _chatCtrl.isGenerating.value
+                              ? _circleButton(
+                                  icon: Icons.stop_rounded,
+                                  color: AppColors.red,
+                                  onTap: _chatCtrl.stopGeneration,
+                                  tooltip: 'Stop',
+                                )
+                              : _circleButton(
+                                  icon: Icons.arrow_upward_rounded,
+                                  color: context.accent,
+                                  onTap: () => _send(),
+                                  tooltip: 'Send',
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _attachmentChoice({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: context.bgPanel,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.borderFaint),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: context.accent.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: context.accent, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: context.text,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(color: context.textD, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttachmentPreview(BuildContext context) {
+    final isImage = (_pendingAttachmentMimeType ?? '').startsWith('image/') &&
+        (_pendingAttachmentBase64?.isNotEmpty ?? false);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.bgPanel,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.borderFaint),
+      ),
+      child: Row(
+        children: [
+          if (isImage)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                base64Decode(_pendingAttachmentBase64!),
+                width: 44,
+                height: 44,
+                fit: BoxFit.cover,
+              ),
+            )
+          else
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: context.accent.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.insert_drive_file_rounded, color: context.accent),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _pendingAttachmentName ?? 'Attachment',
+                  style: TextStyle(
+                    color: context.text,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isImage ? 'Image ready to send' : 'File ready to send',
+                  style: TextStyle(color: context.textD, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: _clearAttachment,
+            icon: Icon(Icons.close_rounded, color: context.textD),
+            tooltip: 'Remove attachment',
+          ),
+        ],
       ),
     );
   }
@@ -1173,10 +1695,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          width: 36,
-          height: 36,
+          width: 32,
+          height: 32,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Icon(icon, size: 20, color: iconColor),
+          child: Icon(icon, size: 18, color: iconColor),
         ),
       ),
     );

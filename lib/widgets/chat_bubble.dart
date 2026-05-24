@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -29,16 +31,18 @@ class ChatBubble extends StatelessWidget {
         children: [
           // Avatar
           Container(
-            width: 28,
-            height: 28,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
-              color: isUser ? context.textM : context.accent,
-              borderRadius: BorderRadius.circular(8),
+              color: isUser ? context.accent : context.accent.withValues(alpha: 0.95),
+              shape: BoxShape.circle,
             ),
             child: Icon(
               isUser ? Icons.person_rounded : Icons.bolt_rounded,
-              size: 16,
-              color: Colors.white,
+              size: 18,
+              color: ThemeData.estimateBrightnessForColor(isUser ? context.accent : context.accent) == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
           ),
           const SizedBox(width: 14),
@@ -56,13 +60,22 @@ class ChatBubble extends StatelessWidget {
     if (isUser) {
       return Padding(
         padding: const EdgeInsets.only(top: 3),
-        child: Text(
-          message.content,
-          style: TextStyle(
-            fontSize: 15,
-            color: context.text,
-            height: 1.6,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (message.hasAttachment) _buildAttachmentPreview(context),
+            if (message.content.isNotEmpty) ...[
+              if (message.hasAttachment) const SizedBox(height: 10),
+              Text(
+                message.content,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: context.text,
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ],
         ),
       );
     }
@@ -86,8 +99,8 @@ class ChatBubble extends StatelessWidget {
                 fontSize: 13,
                 color: const Color(0xFFE6EDF3),
                 backgroundColor: context.isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.06),
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.06),
               ),
               codeblockDecoration: BoxDecoration(
                 color: const Color(0xFF1E1E2E),
@@ -95,7 +108,7 @@ class ChatBubble extends StatelessWidget {
               ),
               codeblockPadding: const EdgeInsets.all(14),
               blockquoteDecoration: BoxDecoration(
-                color: context.accent.withOpacity(0.08),
+                color: context.accent.withValues(alpha: 0.08),
                 border: Border(
                   left: BorderSide(color: context.accent, width: 3),
                 ),
@@ -171,6 +184,68 @@ class ChatBubble extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildAttachmentPreview(BuildContext context) {
+    final isImage = message.hasImageAttachment &&
+        (message.imageMimeType?.startsWith('image/') ?? false);
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 260),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.bgPanel,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.borderFaint),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isImage)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(
+                base64Decode(message.imageBase64!),
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+              ),
+            )
+          else
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: context.accent.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.insert_drive_file_rounded, color: context.accent),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  message.attachmentName ?? 'Attachment',
+                  style: TextStyle(
+                    color: context.text,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isImage ? 'Image sent' : 'File sent',
+                  style: TextStyle(color: context.textD, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

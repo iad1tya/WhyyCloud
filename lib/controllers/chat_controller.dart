@@ -70,13 +70,42 @@ class ChatController extends GetxController {
   }
 
   /// Send a user message and stream AI response.
-  Future<void> sendMessage(String text, {String? modelFilename}) async {
-    if (text.trim().isEmpty) return;
+  Future<void> sendMessage(
+    String text, {
+    String? modelFilename,
+    String? attachmentName,
+    String? attachmentPath,
+    String? attachmentMimeType,
+    String? attachmentBase64,
+  }) async {
+    final trimmedText = text.trim();
+    final hasAttachment =
+        (attachmentPath != null && attachmentPath.isNotEmpty) ||
+        (attachmentBase64 != null && attachmentBase64.isNotEmpty);
+    if (trimmedText.isEmpty && !hasAttachment) return;
     final chat = activeChat;
     if (chat == null) return;
 
+    final isImageAttachment =
+      attachmentMimeType?.startsWith('image/') == true &&
+      (attachmentBase64 != null && attachmentBase64.isNotEmpty);
+
+    final content = trimmedText.isNotEmpty
+        ? trimmedText
+        : (attachmentName?.isNotEmpty == true
+              ? 'Attached ${attachmentName!.endsWith('.gguf') ? 'file' : 'item'}: $attachmentName'
+              : 'Attached item');
+
     // Add user message
-    final userMsg = MessageModel(role: MessageRole.user, content: text.trim());
+    final userMsg = MessageModel(
+      role: MessageRole.user,
+      content: content,
+      attachmentName: attachmentName,
+      attachmentPath: attachmentPath,
+      attachmentMimeType: attachmentMimeType,
+      imageBase64: isImageAttachment ? attachmentBase64 : null,
+      imageMimeType: isImageAttachment ? attachmentMimeType : null,
+    );
     chat.messages.add(userMsg);
     chat.autoTitle();
     chat.updatedAt = DateTime.now();

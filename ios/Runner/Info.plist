@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Whyy Cloud uses speech recognition to turn your voice into a chat message.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Whyy Cloud uses the microphone so you can dictate messages in chat.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
