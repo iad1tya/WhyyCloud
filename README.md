@@ -7,6 +7,21 @@
 
 Whyy Cloud is a comprehensive Flutter application that brings powerful, privacy-first local AI chat workflows directly to your mobile and desktop devices. Every chat, setting, and model remains exclusively on your device. The refined UI coordinates seamless model loading, parameter adjustments, transparent logs, and an integrated local API surface.
 
+## Top open-source models supported
+
+Run the latest open-source AI models directly on your device. From conversational AI to advanced reasoning, choose from industry-leading models optimized for your Android Smartphone.
+
+| Provider | Model Family | Description |
+| :--- | :--- | :--- |
+| <img src="assets/models_icons/meta-logo.png" width="24" alt="Meta"/> Meta | **Meta Llama** | Meta's flagship family of foundation models |
+| <img src="assets/models_icons/google-logo.png" width="24" alt="Google"/> Google | **Google Gemma** | Google's lightweight, state-of-the-art models |
+| <img src="assets/models_icons/huggingface-logo.png" width="24" alt="Hugging Face"/> Hugging Face | **Hugging Face SmolLM** | Compact, efficient models by Hugging Face |
+| <img src="assets/models_icons/deepseek-logo.png" width="24" alt="DeepSeek"/> DeepSeek | **DeepSeek** | Advanced reasoning and coding models |
+| <img src="assets/models_icons/qwen-logo.png" width="24" alt="Qwen"/> Qwen | **Qwen** | Alibaba's powerful multilingual models |
+| <img src="assets/models_icons/ibm-logo.png" width="24" alt="IBM"/> IBM | **IBM Granite** | IBM's open Granite models for enterprise AI |
+| <img src="assets/models_icons/cogito-logo.png" width="24" alt="Deep Cogito"/> Deep Cogito | **Deep Cogito** | Deep Cogito's reasoning-focused open models |
+| <img src="assets/models_icons/liquid-logo.png" width="24" alt="Liquid AI"/> Liquid AI | **Liquid AI LFM** | Liquid AI's efficient Liquid Foundation Models |
+
 ## Screenshots
 
 <div align="center">
@@ -26,42 +41,6 @@ Whyy Cloud is a comprehensive Flutter application that brings powerful, privacy-
 - **Multimodal Support:** Voice inputs (Speech-to-Text), Text-to-Speech (TTS), and image/file attachments for vision models.
 - **Customizable UI:** Full dark/light mode support, aesthetic glassmorphism, and dynamic component styling.
 - **Deep Troubleshooting:** Built-in logs screen to monitor token generation speed, backend allocations, and diagnostic events.
-
----
-
-## Architecture & App Flow
-
-The application is structured logically to ensure state management (via GetX) remains decoupled from the UI:
-
-```mermaid
-flowchart TD
-	A[App Start] --> B[Splash Screen]
-	B --> C[Main UI / Home Screen]
-	C --> D[Chat Controller]
-	D --> E[LLM Service]
-	D --> F[Hive Storage]
-	C --> G[Settings Screen]
-	G --> H[Theme Controller]
-	G --> I[Update / App State Settings]
-	C --> J[Model Library]
-	J --> K["Model Manager (OTA)"]
-	C --> L[Local API Server]
-	C --> M[Logs Screen]
-```
-
-### Core Directory Structure
-
-| Directory | Purpose |
-| --- | --- |
-| `lib/screens/` | Distinct UI screens (Home, Settings, Models, Logs, API) |
-| `lib/controllers/` | GetX controllers managing reactive state and business logic |
-| `lib/services/` | Heavy lifting: LLM backend bindings, local storage, OTA downloads, WakeLock |
-| `lib/models/` | Immutable data classes and Hive type adapters |
-| `lib/theme/` | Centralized color palettes, typography, and styling constants |
-| `lib/widgets/` | Reusable UI components (Chat Bubbles, Model Cards, Input Bars) |
-| `lib/bindings/` | GetX dependency injection setup |
-
----
 
 ## Getting Started
 
@@ -87,18 +66,6 @@ flutter run -d emulator-5554
 # Build a production-ready APK
 flutter build apk --release
 ```
-
----
-
-## Release Signing
-
-Local release signing for Android uses a keystore configuration. The build pipeline looks for:
-1. `whyycloud.jks` in the project root.
-2. `android/key.properties` defining the keystore passwords and alias (`key0`).
-
-If these files are missing, Gradle will automatically fall back to debug signing for local development.
-
----
 
 ## License
 
