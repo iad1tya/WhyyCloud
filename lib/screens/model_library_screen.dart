@@ -531,8 +531,6 @@ class _ImportButton extends StatelessWidget {
               const SizedBox(height: 16),
               _importTile(
                 context,
-                icon: Icons.file_open_rounded,
-                color: AppColors.accentHi,
                 title: 'Import .gguf File',
                 subtitle: 'Select a single model file',
                 onTap: () {
@@ -542,8 +540,6 @@ class _ImportButton extends StatelessWidget {
               ),
               _importTile(
                 context,
-                icon: Icons.folder_open_rounded,
-                color: AppColors.green,
                 title: 'Import from Folder',
                 subtitle: 'Scan folder for .gguf files',
                 onTap: () {
@@ -553,8 +549,6 @@ class _ImportButton extends StatelessWidget {
               ),
               _importTile(
                 context,
-                icon: Icons.link_rounded,
-                color: AppColors.orange,
                 title: 'Add from URL',
                 subtitle: 'Download a .gguf model from a URL',
                 onTap: () {
@@ -572,28 +566,53 @@ class _ImportButton extends StatelessWidget {
 
   Widget _importTile(
     BuildContext context, {
-    required IconData icon,
-    required Color color,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Material(
+        color: context.bgPanel,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: context.borderFaint),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: context.text,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: TextStyle(color: context.textD, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: context.textD, size: 20),
+              ],
+            ),
+          ),
         ),
-        child: Icon(icon, color: color, size: 20),
       ),
-      title: Text(title, style: TextStyle(color: context.text, fontSize: 15)),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(color: context.textD, fontSize: 12),
-      ),
-      onTap: onTap,
     );
   }
 

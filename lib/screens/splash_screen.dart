@@ -91,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
             const SizedBox(height: 8),
             Text(
-              'Run uncensored LLMs natively on any device 🔓',
+              'Run uncensored LLMs natively on any device',
               style: TextStyle(fontSize: 13, color: context.textM),
             ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
             const SizedBox(height: 40),
