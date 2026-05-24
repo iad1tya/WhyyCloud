@@ -38,8 +38,8 @@ class _HeaderTitle extends StatelessWidget {
     return Text(
       label,
       style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
         color: context.text,
       ),
       maxLines: 1,
@@ -92,11 +92,11 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
                   alignment: Alignment.centerLeft,
                   child: widget.showBackButton
                       ? IconButton(
-                          icon: Icon(Icons.arrow_back_rounded, color: context.text),
+                          icon: Icon(Icons.arrow_back_rounded, size: 22, color: context.text),
                           onPressed: () => Get.back(),
                         )
                       : IconButton(
-                          icon: Icon(Icons.menu_rounded, color: context.text),
+                          icon: Icon(Icons.menu_rounded, size: 22, color: context.textM),
                           onPressed: widget.onOpenDrawer ?? () => Scaffold.of(context).openDrawer(),
                         ),
                 ),

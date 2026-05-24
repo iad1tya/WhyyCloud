@@ -606,38 +606,47 @@ class _SettingsBody extends StatelessWidget {
   Widget _header(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        8,
-        showBackButton ? MediaQuery.of(context).padding.top + 4 : 8,
-        16,
-        6,
+        12,
+        showBackButton ? MediaQuery.of(context).padding.top + 12 : 12,
+        12,
+        4,
       ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(
-              showBackButton ? Icons.arrow_back_rounded : Icons.menu_rounded,
-              color: context.text,
-            ),
-            onPressed: showBackButton
-                ? () => Get.back()
-                : (onOpenDrawer ?? () => Scaffold.of(context).openDrawer()),
+      child: Container(
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: context.bgPanel,
+          border: Border(
+            bottom: BorderSide(color: context.borderFaint, width: 1),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Settings',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: context.text,
-                  ),
+        ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                icon: Icon(
+                  showBackButton ? Icons.arrow_back_rounded : Icons.menu_rounded,
+                  size: 22,
+                  color: context.text,
                 ),
-              ],
+                onPressed: showBackButton
+                    ? () => Get.back()
+                    : (onOpenDrawer ?? () => Scaffold.of(context).openDrawer()),
+              ),
             ),
-          ),
-        ],
+            Center(
+              child: Text(
+                'Settings',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: context.text,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
