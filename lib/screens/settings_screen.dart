@@ -771,17 +771,27 @@ class _PromptEditorPage extends StatefulWidget {
 
 class _PromptEditorPageState extends State<_PromptEditorPage> {
   late final TextEditingController _controller;
+  bool _changed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialText);
+    _controller.addListener(_onTextChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onTextChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    final changed = _controller.text.trim() != widget.initialText.trim();
+    if (changed != _changed) {
+      setState(() => _changed = changed);
+    }
   }
 
   void _save() {
@@ -848,12 +858,18 @@ class _PromptEditorPageState extends State<_PromptEditorPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        elevation: 0,
+                      onPressed: _changed ? _save : null,
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.disabled)) return context.borderFaint;
+                          return context.accent;
+                        }),
+                        foregroundColor: MaterialStateProperty.resolveWith((states) {
+                          final bg = states.contains(MaterialState.disabled) ? context.borderFaint : context.accent;
+                          return ThemeData.estimateBrightnessForColor(bg) == Brightness.dark ? Colors.white : Colors.black;
+                        }),
+                        padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 14)),
+                        elevation: MaterialStateProperty.all(0),
                       ),
                       child: const Text('Save'),
                     ),
