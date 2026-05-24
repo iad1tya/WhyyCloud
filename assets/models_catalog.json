@@ -3,7 +3,7 @@
     "id": "gemma-2-2b-abliterated",
     "name": "Gemma 2 2B Abliterated",
     "filename": "gemma-2-2b-it-abliterated-Q4_K_M.gguf",
-    "url": "https:
+    "url": "https://huggingface.co/bartowski/gemma-2-2b-it-abliterated-GGUF/resolve/main/gemma-2-2b-it-abliterated-Q4_K_M.gguf",
     "sizeGb": 1.6,
     "minRamGb": 4,
     "label": "UNCENSORED",
@@ -15,7 +15,7 @@
     "id": "gemma-4-heretic",
     "name": "Gemma 4 E4B Heretic",
     "filename": "gemma-4-E4B-it-ultra-uncensored-heretic-Q4_K_M.gguf",
-    "url": "https:
+    "url": "https://huggingface.co/llmfan46/gemma-4-E4B-it-ultra-uncensored-heretic-GGUF/resolve/main/gemma-4-E4B-it-ultra-uncensored-heretic-Q4_K_M.gguf",
     "sizeGb": 5.34,
     "minRamGb": 8,
     "label": "UNCENSORED",
@@ -27,7 +27,7 @@
     "id": "dolphin-llama3-8b",
     "name": "Dolphin 2.9 Llama 3 8B",
     "filename": "dolphin-2.9-llama3-8b-Q4_K_M.gguf",
-    "url": "https:
+    "url": "https://huggingface.co/bartowski/dolphin-2.9-llama3-8b-GGUF/resolve/main/dolphin-2.9-llama3-8b-Q4_K_M.gguf",
     "sizeGb": 4.9,
     "minRamGb": 8,
     "label": "UNCENSORED",
@@ -39,7 +39,7 @@
     "id": "phi-3.5-mini",
     "name": "Phi-3.5 Mini 3.8B",
     "filename": "Phi-3.5-mini-instruct-Q4_K_M.gguf",
-    "url": "https:
+    "url": "https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF/resolve/main/Phi-3.5-mini-instruct-Q4_K_M.gguf",
     "sizeGb": 2.2,
     "minRamGb": 4,
     "label": "STANDARD",
