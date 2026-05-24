@@ -228,8 +228,9 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
                   ElevatedButton(
                     onPressed: _testing ? null : onTest,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: context.accent,
-                      foregroundColor: Colors.white,
+                      backgroundColor: context.accent.withValues(alpha: 0.18),
+                      foregroundColor: context.text,
+                      side: BorderSide(color: context.accent.withValues(alpha: 0.45)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                       minimumSize: const Size(60, 30),
                     ),

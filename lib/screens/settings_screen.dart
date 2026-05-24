@@ -214,7 +214,7 @@ class _SettingsBody extends StatelessWidget {
                                 color: AppColors.green, size: 20);
                           }
                           return const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 14, color: AppColors.orange);
+                              size: 14, color: Colors.white);
                         },
                       ),
                       onTap: () async {
@@ -749,10 +749,11 @@ class _SettingsBody extends StatelessWidget {
       selected: selected,
       onSelected: (_) => chatCtrl.updateTemperature(value),
       labelStyle: TextStyle(
-        color: selected ? context.accent : context.text,
+        color: context.text,
         fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
       ),
-      selectedColor: context.accent.withValues(alpha: 0.16),
+      checkmarkColor: Colors.white,
+      selectedColor: context.accent.withValues(alpha: 0.18),
       backgroundColor: context.bgInput,
       side: BorderSide(
         color: selected ? context.accent.withValues(alpha: 0.45) : Colors.transparent,
@@ -1134,15 +1135,17 @@ class _HardwareSettingsCardState extends State<_HardwareSettingsCard> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? context.accent : context.bgPanel,
+            color: selected ? context.accent.withValues(alpha: 0.18) : context.bgPanel,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.transparent),
+            border: Border.all(
+              color: selected ? context.accent.withValues(alpha: 0.55) : context.border,
+            ),
           ),
           child: Center(
             child: Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : context.text,
+                color: context.text,
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),

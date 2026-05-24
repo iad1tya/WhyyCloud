@@ -165,11 +165,11 @@ class LogsScreen extends StatelessWidget {
                       }
                     });
                 },
-                icon: const Icon(Icons.share_rounded, size: 18),
                 label: const Text('Copy Logs to Share'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: context.accent,
-                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black87,
+                  side: const BorderSide(color: Colors.white),
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -214,7 +214,7 @@ class _FilterBar extends StatelessWidget {
         ? AppColors.orange
         : value == 'INFO'
           ? AppColors.green
-          : context.accent;
+          : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
@@ -224,14 +224,14 @@ class _FilterBar extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-            color: selected ? Colors.white : context.textM,
+            color: selected ? Colors.black87 : context.textM,
           ),
         ),
         selected: selected,
         onSelected: (_) => _activeFilter.value = value,
-        selectedColor: color,
+        selectedColor: Colors.white,
         backgroundColor: context.bgPanel,
-        side: BorderSide(color: selected ? color : context.border),
+        side: BorderSide(color: selected ? Colors.white : context.border),
         showCheckmark: false,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
