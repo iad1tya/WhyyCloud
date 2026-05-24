@@ -45,7 +45,7 @@ flowchart TD
 	G --> H[Theme Controller]
 	G --> I[Update / App State Settings]
 	C --> J[Model Library]
-	J --> K[Model Manager (OTA)]
+	J --> K["Model Manager (OTA)"]
 	C --> L[Local API Server]
 	C --> M[Logs Screen]
 ```
