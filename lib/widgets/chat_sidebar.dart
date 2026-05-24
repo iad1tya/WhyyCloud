@@ -158,10 +158,10 @@ class ChatSidebar extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, String chatId, String chatTitle) {
-    showDialog(
+  Future<void> _confirmDelete(BuildContext context, String chatId, String chatTitle) async {
+    final confirmed = await showDialog<bool?>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: context.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
@@ -178,14 +178,11 @@ class ChatSidebar extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text('Cancel', style: TextStyle(color: context.textD)),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              onDeleteChat(chatId);
-            },
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.red,
               elevation: 0,
@@ -196,5 +193,10 @@ class ChatSidebar extends StatelessWidget {
         ],
       ),
     );
+
+    if (confirmed == true) {
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      onDeleteChat(chatId);
+    }
   }
 }

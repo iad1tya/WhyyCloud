@@ -459,94 +459,77 @@ class _SettingsBody extends StatelessWidget {
   }
 
   Future<void> _showPromptEditor(BuildContext context, ChatController chatCtrl) async {
-    final controller = TextEditingController(text: chatCtrl.systemPrompt.value);
-    await Get.dialog(
-      AlertDialog(
-        backgroundColor: context.bgPanel,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Global Prompt', style: TextStyle(color: context.text)),
-        content: TextField(
-          controller: controller,
-          maxLines: 5,
-          autofocus: true,
-          style: TextStyle(color: context.text, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: 'e.g. You are a helpful assistant...',
-            filled: true,
-            fillColor: context.bgInput,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Cancel', style: TextStyle(color: context.textD)),
-          ),
-          TextButton(
-            onPressed: () {
-              controller.clear();
-              chatCtrl.clearGlobalSystemPrompt();
-              Get.back();
-            },
-            child: const Text('Clear', style: TextStyle(color: AppColors.red)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              chatCtrl.setGlobalSystemPrompt(controller.text.trim());
-              Get.back();
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+    final result = await Get.to<String?>(
+      () => _PromptEditorPage(initialText: chatCtrl.systemPrompt.value),
     );
-    controller.dispose();
+
+    if (result == null) return;
+    await WidgetsBinding.instance.endOfFrame;
+    await WidgetsBinding.instance.endOfFrame;
+    if (result.isEmpty) {
+      chatCtrl.clearGlobalSystemPrompt();
+    } else {
+      chatCtrl.setGlobalSystemPrompt(result);
+    }
   }
 
   Future<void> _showPortEditor(BuildContext context, LocalApiServerService apiServer) async {
     final controller = TextEditingController(text: apiServer.port.value.toString());
-    await Get.dialog(
-      AlertDialog(
-        backgroundColor: context.bgPanel,
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('API Port', style: TextStyle(color: context.text)),
+        title: Text('API Port', style: TextStyle(color: dialogContext.text)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          autofocus: true,
-          style: TextStyle(color: context.text, fontSize: 14),
+          style: TextStyle(color: dialogContext.text, fontSize: 14),
           decoration: InputDecoration(
             hintText: '4891',
             filled: true,
-            fillColor: context.bgInput,
+            fillColor: dialogContext.bgInput,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Cancel', style: TextStyle(color: context.textD)),
+            onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text('Cancel', style: TextStyle(color: dialogContext.textD)),
           ),
           ElevatedButton(
-            onPressed: () async {
-              final parsed = int.tryParse(controller.text.trim());
-              if (parsed == null || parsed < 1024 || parsed > 65535) {
-                Get.snackbar(
-                  'Invalid Port',
-                  'Choose a port from 1024 to 65535.',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                return;
-              }
-              await apiServer.setPort(parsed);
-              Get.back();
+            onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(dialogContext).pop(controller.text.trim());
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
             child: const Text('Save'),
           ),
         ],
       ),
     );
     controller.dispose();
+
+    if (result == null) return;
+    await WidgetsBinding.instance.endOfFrame;
+    await WidgetsBinding.instance.endOfFrame;
+    final parsed = int.tryParse(result);
+    if (parsed == null || parsed < 1024 || parsed > 65535) {
+      Get.snackbar(
+        'Invalid Port',
+        'Choose a port from 1024 to 65535.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    await apiServer.setPort(parsed);
   }
 
   Future<void> _showHardwareSheet(BuildContext context, ChatStorageService storage) async {
@@ -663,6 +646,114 @@ class _SettingsBody extends StatelessWidget {
     return result;
   }
 
+}
+
+class _PromptEditorPage extends StatefulWidget {
+  final String initialText;
+
+  const _PromptEditorPage({required this.initialText});
+
+  @override
+  State<_PromptEditorPage> createState() => _PromptEditorPageState();
+}
+
+class _PromptEditorPageState extends State<_PromptEditorPage> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialText);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).pop(_controller.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.bg,
+      appBar: AppBar(
+        backgroundColor: context.bgPanel,
+        elevation: 0,
+        title: Text('Global Prompt', style: TextStyle(color: context.text)),
+        iconTheme: IconThemeData(color: context.text),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  maxLines: null,
+                  expands: true,
+                  keyboardType: TextInputType.multiline,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: TextStyle(color: context.text, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. You are a helpful assistant...',
+                    filled: true,
+                    fillColor: context.bgPanel,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: context.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: context.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: context.accent),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(''),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.red,
+                        side: BorderSide(color: AppColors.red.withValues(alpha: 0.6)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Clear'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                      ),
+                      child: const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _HardwareSettingsCard extends StatefulWidget {

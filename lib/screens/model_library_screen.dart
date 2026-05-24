@@ -160,7 +160,6 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
                 filtered = allCatalog.where((m) => m.isCustom).toList();
                 break;
               case _Filter.all:
-              default:
                 filtered = allCatalog;
             }
 
@@ -371,30 +370,28 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
     );
   }
 
-  void _confirmDelete(
+  Future<void> _confirmDelete(
     BuildContext context,
     ModelController ctrl,
     AiModelInfo model,
-  ) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: context.bgPanel,
+  ) async {
+    final confirmed = await showDialog<bool?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Delete Model File', style: TextStyle(color: context.text)),
+        title: Text('Delete Model File', style: TextStyle(color: dialogContext.text)),
         content: Text(
           'Delete ${model.name}? (${model.sizeGb} GB will be freed)',
-          style: TextStyle(color: context.textM),
+          style: TextStyle(color: dialogContext.textM),
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Cancel', style: TextStyle(color: context.textD)),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Cancel', style: TextStyle(color: dialogContext.textD)),
           ),
           ElevatedButton(
-            onPressed: () {
-              ctrl.deleteModel(model.filename);
-              Get.back();
-            },
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.red,
               elevation: 0,
@@ -404,40 +401,38 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
         ],
       ),
     );
+
+    if (confirmed == true) {
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      ctrl.deleteModel(model.filename);
+    }
   }
 
-  void _confirmRemoveCustom(
+  Future<void> _confirmRemoveCustom(
     BuildContext context,
     ModelController ctrl,
     AiModelInfo model,
-  ) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: context.bgPanel,
+  ) async {
+    final confirmed = await showDialog<bool?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Remove Custom Model',
-          style: TextStyle(color: context.text),
+          style: TextStyle(color: dialogContext.text),
         ),
         content: Text(
           'Remove "${model.name}" from your library?\nThis will also delete the downloaded file if any.',
-          style: TextStyle(color: context.textM),
+          style: TextStyle(color: dialogContext.textM),
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Cancel', style: TextStyle(color: context.textD)),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Cancel', style: TextStyle(color: dialogContext.textD)),
           ),
           ElevatedButton(
-            onPressed: () {
-              ctrl.deleteCustomModel(model);
-              Get.back();
-              Get.snackbar(
-                'Removed',
-                '${model.name} removed from library.',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.red,
               elevation: 0,
@@ -447,6 +442,16 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
         ],
       ),
     );
+
+    if (confirmed == true) {
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      ctrl.deleteCustomModel(model);
+      Get.snackbar(
+        'Removed',
+        '${model.name} removed from library.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 }
 
@@ -578,7 +583,7 @@ class _ImportButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Icon(icon, color: color, size: 20),
@@ -592,68 +597,69 @@ class _ImportButton extends StatelessWidget {
     );
   }
 
-  void _showAddUrlDialog(BuildContext context) {
+  Future<void> _showAddUrlDialog(BuildContext context) async {
     final nameCtrl = TextEditingController();
     final urlCtrl = TextEditingController();
 
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: context.bgPanel,
+    final result = await showDialog<Map<String, String>?>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.bgPanel,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Add Model from URL',
-          style: TextStyle(color: context.text),
+          style: TextStyle(color: dialogContext.text),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameCtrl,
-              style: TextStyle(color: context.text, fontSize: 14),
+              style: TextStyle(color: dialogContext.text, fontSize: 14),
               decoration: InputDecoration(
                 labelText: 'Model Name',
-                labelStyle: TextStyle(color: context.textD, fontSize: 13),
+                labelStyle: TextStyle(color: dialogContext.textD, fontSize: 13),
                 hintText: 'e.g. Mistral 7B Uncensored',
-                hintStyle: TextStyle(color: context.textD.withOpacity(0.5)),
+                hintStyle: TextStyle(color: dialogContext.textD.withValues(alpha: 0.5)),
                 filled: true,
-                fillColor: context.bgInput,
+                fillColor: dialogContext.bgInput,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: context.border),
+                  borderSide: BorderSide(color: dialogContext.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: context.border),
+                  borderSide: BorderSide(color: dialogContext.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: context.accent),
+                  borderSide: BorderSide(color: dialogContext.accent),
                 ),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: urlCtrl,
-              style: TextStyle(color: context.text, fontSize: 14),
+              style: TextStyle(color: dialogContext.text, fontSize: 14),
               maxLines: 2,
               decoration: InputDecoration(
                 labelText: 'Download URL',
-                labelStyle: TextStyle(color: context.textD, fontSize: 13),
+                labelStyle: TextStyle(color: dialogContext.textD, fontSize: 13),
                 hintText: 'https://huggingface.co/.../model.gguf',
-                hintStyle: TextStyle(color: context.textD.withOpacity(0.5)),
+                hintStyle: TextStyle(color: dialogContext.textD.withValues(alpha: 0.5)),
                 filled: true,
-                fillColor: context.bgInput,
+                fillColor: dialogContext.bgInput,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: context.border),
+                  borderSide: BorderSide(color: dialogContext.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: context.border),
+                  borderSide: BorderSide(color: dialogContext.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: context.accent),
+                  borderSide: BorderSide(color: dialogContext.accent),
                 ),
               ),
             ),
@@ -661,34 +667,17 @@ class _ImportButton extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: Text('Cancel', style: TextStyle(color: context.textD)),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Cancel', style: TextStyle(color: dialogContext.textD)),
           ),
           ElevatedButton(
             onPressed: () {
               final name = nameCtrl.text.trim();
               final url = urlCtrl.text.trim();
-              if (name.isEmpty || url.isEmpty) {
-                Get.snackbar(
-                  'Missing Info',
-                  'Please enter both name and URL.',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                return;
-              }
-              if (!url.startsWith('http')) {
-                Get.snackbar(
-                  'Invalid URL',
-                  'URL must start with http:// or https://',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                return;
-              }
-              Get.back();
-              ctrl.addCustomUrlModel(name: name, url: url);
+              Navigator.of(dialogContext).pop({'name': name, 'url': url});
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: context.accent,
+              backgroundColor: AppColors.accent,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -702,5 +691,31 @@ class _ImportButton extends StatelessWidget {
         ],
       ),
     );
+
+    nameCtrl.dispose();
+    urlCtrl.dispose();
+
+    if (result == null) return;
+    final name = result['name'] ?? '';
+    final url = result['url'] ?? '';
+    if (name.isEmpty || url.isEmpty) {
+      Get.snackbar(
+        'Missing Info',
+        'Please enter both name and URL.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (!url.startsWith('http')) {
+      Get.snackbar(
+        'Invalid URL',
+        'URL must start with http:// or https://',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    ctrl.addCustomUrlModel(name: name, url: url);
   }
 }
