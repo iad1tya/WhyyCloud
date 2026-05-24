@@ -66,13 +66,13 @@ flutter:
   uses-material-design: true
   assets:
     - assets/models_catalog.json
-    - assets/WhyyCloud.png
+    - assets/banner.png
     - assets/playstore-icon.png
 
 flutter_icons:
   android: true
   ios: true
-  image_path: assets/WhyyCloud.png
+  image_path: assets/banner.png
 
 dependency_overrides:
   archive: ^4.0.7

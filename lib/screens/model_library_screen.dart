@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -20,15 +21,32 @@ class ModelLibraryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final overlayStyle = SystemUiOverlayStyle(
+      statusBarColor: context.bgPanel,
+      statusBarIconBrightness: context.isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: context.isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: context.bgPanel,
+      systemNavigationBarDividerColor: context.bgPanel,
+      systemNavigationBarIconBrightness:
+          context.isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+    );
+
     if (embedded) {
-      return _ModelLibraryBody(
-        showBackButton: false,
-        onOpenDrawer: onOpenDrawer,
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: overlayStyle,
+        child: _ModelLibraryBody(
+          showBackButton: false,
+          onOpenDrawer: onOpenDrawer,
+        ),
       );
     }
-    return Scaffold(
-      backgroundColor: context.bg,
-      body: _ModelLibraryBody(showBackButton: true),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Scaffold(
+        backgroundColor: context.bg,
+        body: _ModelLibraryBody(showBackButton: true),
+      ),
     );
   }
 }
@@ -75,55 +93,50 @@ class _ModelLibraryBodyState extends State<_ModelLibraryBody> {
 
     return Column(
       children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            12,
-            widget.showBackButton
-                ? MediaQuery.of(context).padding.top + 12
-                : 12,
-            12,
-            4,
-          ),
-          child: Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: context.bgPanel,
-              borderRadius: BorderRadius.circular(0),
-              border: Border(
-                bottom: BorderSide(color: context.borderFaint, width: 1),
+        Container(
+          color: context.bgPanel,
+          child: SafeArea(
+            bottom: false,
+            child: Container(
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: context.bgPanel,
+                border: Border(
+                  bottom: BorderSide(color: context.borderFaint, width: 1),
+                ),
               ),
-            ),
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: widget.showBackButton
-                      ? IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_rounded,
-                            size: 22,
-                            color: context.text,
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: widget.showBackButton
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              size: 22,
+                              color: context.text,
+                            ),
+                            onPressed: () => Get.back(),
+                          )
+                        : IconButton(
+                            icon: Icon(
+                              Icons.menu_rounded,
+                              size: 22,
+                              color: context.textM,
+                            ),
+                            onPressed:
+                                widget.onOpenDrawer ??
+                                () => Scaffold.of(context).openDrawer(),
                           ),
-                          onPressed: () => Get.back(),
-                        )
-                      : IconButton(
-                          icon: Icon(
-                            Icons.menu_rounded,
-                            size: 22,
-                            color: context.textM,
-                          ),
-                          onPressed:
-                              widget.onOpenDrawer ??
-                              () => Scaffold.of(context).openDrawer(),
-                        ),
-                ),
-                const Center(child: _HeaderTitle(label: 'Models')),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _ImportButton(ctrl: ctrl),
-                ),
-              ],
+                  ),
+                  const Center(child: _HeaderTitle(label: 'Models')),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: _ImportButton(ctrl: ctrl),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

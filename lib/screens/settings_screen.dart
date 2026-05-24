@@ -23,12 +23,29 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final overlayStyle = SystemUiOverlayStyle(
+      statusBarColor: context.bgPanel,
+      statusBarIconBrightness: context.isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: context.isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: context.bgPanel,
+      systemNavigationBarDividerColor: context.bgPanel,
+      systemNavigationBarIconBrightness:
+          context.isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+    );
+
     if (embedded) {
-      return _SettingsBody(showBackButton: false, onOpenDrawer: onOpenDrawer);
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: overlayStyle,
+        child: _SettingsBody(showBackButton: false, onOpenDrawer: onOpenDrawer),
+      );
     }
-    return Scaffold(
-      backgroundColor: context.bg,
-      body: _SettingsBody(showBackButton: true),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: Scaffold(
+        backgroundColor: context.bg,
+        body: _SettingsBody(showBackButton: true),
+      ),
     );
   }
 }
@@ -49,7 +66,10 @@ class _SettingsBody extends StatelessWidget {
 
     return Column(
       children: [
-        _header(context),
+        Container(
+          color: context.bgPanel,
+          child: SafeArea(bottom: false, child: _header(context)),
+        ),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -320,51 +340,41 @@ class _SettingsBody extends StatelessWidget {
   }
 
   Widget _header(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        12,
-        showBackButton ? MediaQuery.of(context).padding.top + 12 : 12,
-        12,
-        4,
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: context.bgPanel,
+        border: Border(
+          bottom: BorderSide(color: context.borderFaint, width: 1),
+        ),
       ),
-      child: Container(
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: context.bgPanel,
-          border: Border(
-            bottom: BorderSide(color: context.borderFaint, width: 1),
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              icon: Icon(
+                showBackButton ? Icons.arrow_back_rounded : Icons.menu_rounded,
+                size: 22,
+                color: context.text,
+              ),
+              onPressed: showBackButton
+                  ? () => Get.back()
+                  : (onOpenDrawer ?? () => Scaffold.of(context).openDrawer()),
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                icon: Icon(
-                  showBackButton
-                      ? Icons.arrow_back_rounded
-                      : Icons.menu_rounded,
-                  size: 22,
-                  color: context.text,
-                ),
-                onPressed: showBackButton
-                    ? () => Get.back()
-                    : (onOpenDrawer ?? () => Scaffold.of(context).openDrawer()),
+          Center(
+            child: Text(
+              'Settings',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: context.text,
               ),
             ),
-            Center(
-              child: Text(
-                'Settings',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: context.text,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

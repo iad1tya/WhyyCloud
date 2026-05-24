@@ -536,9 +536,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMobileLayout() {
+    final shellColor = _mobileTabIndex == 0 ? context.bg : context.bgPanel;
+
     return Scaffold(
       key: _mobileScaffoldKey,
-      backgroundColor: context.bg,
+      backgroundColor: shellColor,
       resizeToAvoidBottomInset: true,
 
       drawer: Drawer(
@@ -660,27 +662,30 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: IndexedStack(
-        index: _mobileTabIndex,
-        children: [
-          _buildMobileChatTab(),
+      body: ColoredBox(
+        color: shellColor,
+        child: IndexedStack(
+          index: _mobileTabIndex,
+          children: [
+            _buildMobileChatTab(),
 
-          SafeArea(
-            bottom: false,
-            child: ModelLibraryScreen(
-              embedded: true,
-              onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
+            SafeArea(
+              bottom: false,
+              child: ModelLibraryScreen(
+                embedded: true,
+                onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
+              ),
             ),
-          ),
 
-          SafeArea(
-            bottom: false,
-            child: SettingsScreen(
-              embedded: true,
-              onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
+            SafeArea(
+              bottom: false,
+              child: SettingsScreen(
+                embedded: true,
+                onOpenDrawer: () => _mobileScaffoldKey.currentState?.openDrawer(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
