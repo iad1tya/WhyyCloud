@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/banner.png" width="128" height="128" alt="Whyy Cloud Logo"/>
+  <img src="assets/banner.png" alt="Whyy Cloud Logo"/>
   <p><strong>Portable AI — Run uncensored local LLMs natively on any device.</strong></p>
 </div>
 
