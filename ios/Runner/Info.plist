@@ -28,7 +28,7 @@
 	<true/>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Whyy Cloud uses speech recognition to turn your voice into a chat message.</string>
-	<!-- Microphone usage removed -->
+	
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

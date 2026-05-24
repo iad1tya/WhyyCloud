@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// Removed microphone and TTS packages
+
 
 import '../theme/app_colors.dart';
 import '../controllers/chat_controller.dart';
@@ -31,10 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final _themeCtrl = Get.find<ThemeController>();
   final _msgController = TextEditingController();
   final _scrollController = ScrollController();
-  // voice features removed
+  
   bool _sidebarOpen = true;
   bool _autoScrollToBottom = true;
-  // voice flags removed
+  
   String? _lastRenderedChatId;
 
   String? _pendingAttachmentName;
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleChatScroll);
-    // voice initialization removed
+    
   }
 
   @override
@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.removeListener(_handleChatScroll);
     _scrollController.dispose();
     _msgController.dispose();
-    // stopped voice services
+    
     super.dispose();
   }
 
@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Voice service methods removed
+  
 
   Future<void> _send() async {
     final text = _msgController.text.trim();
@@ -120,14 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _scrollToBottom(force: true);
 
-    // TTS disabled
+    
   }
 
-  // Voice input removed
+  
 
-  // finish voice capture removed
+  
 
-  // TTS removed
+  
 
   void _clearAttachment() {
     setState(() {
@@ -1270,7 +1270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           color: context.text,
-                          height: 1.4,
+                          height: 1.35,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Ask anything...',
@@ -1278,12 +1278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.fromLTRB(
-                            10,
-                            4,
-                            10,
-                            4,
-                          ),
+                          contentPadding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                         ),
                       ),
                     ),
@@ -1328,7 +1323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           color: context.text,
-                          height: 1.35,
+                          height: 1.3,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Ask anything...',
@@ -1337,7 +1332,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
                           isDense: true,
-                          contentPadding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                          contentPadding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
                         ),
                       ),
                     ),
@@ -1510,10 +1505,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          width: 32,
-          height: 32,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: Icon(icon, size: 18, color: iconColor),
+          child: Icon(icon, size: 22, color: iconColor),
         ),
       ),
     );
