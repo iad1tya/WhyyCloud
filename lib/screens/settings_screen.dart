@@ -860,16 +860,16 @@ class _PromptEditorPageState extends State<_PromptEditorPage> {
                     child: ElevatedButton(
                       onPressed: _changed ? _save : null,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith((states) {
-                          if (states.contains(MaterialState.disabled)) return context.borderFaint;
+                        backgroundColor: WidgetStateProperty.resolveWith((states) {
+                          if (states.contains(WidgetState.disabled)) return context.borderFaint;
                           return context.accent;
                         }),
-                        foregroundColor: MaterialStateProperty.resolveWith((states) {
-                          final bg = states.contains(MaterialState.disabled) ? context.borderFaint : context.accent;
+                        foregroundColor: WidgetStateProperty.resolveWith((states) {
+                          final bg = states.contains(WidgetState.disabled) ? context.borderFaint : context.accent;
                           return ThemeData.estimateBrightnessForColor(bg) == Brightness.dark ? Colors.white : Colors.black;
                         }),
-                        padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 14)),
-                        elevation: MaterialStateProperty.all(0),
+                        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 14)),
+                        elevation: WidgetStateProperty.all(0),
                       ),
                       child: const Text('Save'),
                     ),

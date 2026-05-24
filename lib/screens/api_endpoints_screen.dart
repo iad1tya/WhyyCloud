@@ -73,12 +73,12 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             // Status Header
-            Container(
+                Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: running ? AppColors.green.withOpacity(0.1) : AppColors.red.withOpacity(0.1),
+                color: running ? AppColors.green.withValues(alpha: 0.1) : AppColors.red.withValues(alpha: 0.1),
                 border: Border.all(
-                  color: running ? AppColors.green.withOpacity(0.3) : AppColors.red.withOpacity(0.3),
+                  color: running ? AppColors.green.withValues(alpha: 0.3) : AppColors.red.withValues(alpha: 0.3),
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -201,17 +201,17 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: methodColor.withOpacity(0.15),
+                    color: methodColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(
-                    method,
-                    style: TextStyle(
-                      color: methodColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                    child: Text(
+                      method,
+                      style: TextStyle(
+                        color: methodColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -227,12 +227,18 @@ class _ApiEndpointsScreenState extends State<ApiEndpointsScreen> {
                 if (onTest != null)
                   ElevatedButton(
                     onPressed: _testing ? null : onTest,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.accent.withValues(alpha: 0.18),
-                      foregroundColor: context.text,
-                      side: BorderSide(color: context.accent.withValues(alpha: 0.45)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                      minimumSize: const Size(60, 30),
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.disabled)) return context.borderFaint;
+                        return context.accent.withValues(alpha: 0.18);
+                      }),
+                      foregroundColor: WidgetStateProperty.resolveWith((states) {
+                        final bg = states.contains(WidgetState.disabled) ? context.borderFaint : context.accent.withValues(alpha: 0.18);
+                        return ThemeData.estimateBrightnessForColor(bg) == Brightness.dark ? Colors.white : Colors.black;
+                      }),
+                      side: WidgetStateProperty.all(BorderSide(color: context.accent.withValues(alpha: 0.45))),
+                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 12, vertical: 0)),
+                      minimumSize: WidgetStateProperty.all(const Size(60, 30)),
                     ),
                     child: const Text('Test', style: TextStyle(fontSize: 12)),
                   ),
