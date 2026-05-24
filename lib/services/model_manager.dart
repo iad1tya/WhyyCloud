@@ -14,6 +14,9 @@ import 'wakelock_service.dart';
 
 /// Manages model catalog, downloads, and local file discovery.
 class ModelManager extends GetxService {
+  static const _remoteCatalogUrl =
+      'https://raw.githubusercontent.com/iad1tya/WhyyCloud/refs/heads/main/assets/models_catalog.json';
+
   final catalog = <AiModelInfo>[].obs;
   final downloadedModels = <String>[].obs; // filenames on-disk (list for reactivity)
   
@@ -63,12 +66,21 @@ class ModelManager extends GetxService {
   /// Load the embedded model catalog from assets + persisted custom models.
   Future<void> _loadCatalog() async {
     try {
-      final jsonStr = await rootBundle.loadString('assets/models_catalog.json');
-      final list = jsonDecode(jsonStr) as List;
-      catalog.value =
-          list.map((j) => AiModelInfo.fromJson(j as Map<String, dynamic>)).toList();
+      final response = await http
+          .get(Uri.parse(_remoteCatalogUrl))
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        _applyCatalogJson(response.body);
+      } else {
+        throw HttpException('Remote catalog returned ${response.statusCode}');
+      }
     } catch (e) {
-      // Catalog couldn't load — will be empty
+      try {
+        final jsonStr = await rootBundle.loadString('assets/models_catalog.json');
+        _applyCatalogJson(jsonStr);
+      } catch (_) {
+        // Catalog couldn't load — will be empty
+      }
     }
 
     // Load persisted custom models
@@ -83,6 +95,12 @@ class ModelManager extends GetxService {
         }
       }
     } catch (_) {}
+  }
+
+  void _applyCatalogJson(String jsonStr) {
+    final list = jsonDecode(jsonStr) as List;
+    catalog.value =
+        list.map((j) => AiModelInfo.fromJson(j as Map<String, dynamic>)).toList();
   }
 
   /// Scan the models directory for downloaded .gguf files.
